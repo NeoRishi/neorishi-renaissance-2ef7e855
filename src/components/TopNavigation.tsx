@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserMenu } from "./UserMenu";
 import { useNavigate } from "react-router-dom";
-import { Home, Star, DollarSign, BookOpen, LogIn, Users, Calendar } from "lucide-react";
+import { Home, Star, DollarSign, BookOpen, LogIn, Users } from "lucide-react";
 
 interface TopNavigationProps {
   onNavigate: (section: 'home' | 'subscription' | 'goals' | 'assessment' | 'features' | 'about') => void;
@@ -36,13 +36,6 @@ export const TopNavigation = ({ onNavigate }: TopNavigationProps) => {
             >
               <Home className="w-4 h-4" />
               <span>Home</span>
-            </button>
-            <button 
-              onClick={() => navigate('/calendar')}
-              className="flex items-center space-x-2 text-purple-700 hover:text-purple-800 font-medium transition-colors"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>🌙 Calendar</span>
             </button>
             <button 
               onClick={() => onNavigate('about')}

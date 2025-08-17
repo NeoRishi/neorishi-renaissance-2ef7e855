@@ -10,7 +10,6 @@ import Blog from "./pages/Blog";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import SettingsPage from "./pages/Settings";
-import { LunarCalendar } from "./components/lunar/LunarCalendar";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +22,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/calendar" element={<LunarCalendar />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/blog" element={<Blog />} />

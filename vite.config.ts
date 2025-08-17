@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "::",
-      port: 8083,
+      port: 8080,
       cors: true, // Enable CORS
       proxy: {
         // Proxy Supabase requests if needed
