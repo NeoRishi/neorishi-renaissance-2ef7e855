@@ -14,7 +14,7 @@ export const AuthDebug = () => {
 
   const handleTestSignUp = async () => {
     console.log('Testing sign up...');
-    const result = await signUp(testEmail, testPassword, testName, testPhone);
+    const result = await signUp(testEmail, testPassword, testName, testPhone, 'US');
     console.log('Sign up result:', result);
   };
 

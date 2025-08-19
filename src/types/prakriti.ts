@@ -8,4 +8,7 @@ export interface PrakritiResult {
   dominantDosha: DoshaType;
   secondaryDosha: DoshaType;
   constitution: ConstitutionType;
-} 
+  scores?: { vata: number; pitta: number; kapha: number; };
+  answers?: Record<string, string>;
+  totalQuestions?: number;
+}

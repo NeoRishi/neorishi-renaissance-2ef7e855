@@ -28,7 +28,7 @@ export const QuestionCard = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-amber-600 bg-amber-100 px-3 py-1 rounded-full">
-            {question.category}
+            Question {1}
           </span>
         </div>
         <CardTitle className="text-xl text-amber-800 leading-relaxed mt-4">
@@ -41,11 +41,11 @@ export const QuestionCard = ({
           onValueChange={onAnswerChange}
           className="space-y-4"
         >
-          {question.options.map((option, index) => (
-            <div key={index} className="flex items-start space-x-3 p-4 rounded-lg border border-amber-100 hover:bg-amber-50 transition-colors">
-              <RadioGroupItem value={option.value} id={`option-${index}`} className="mt-1" />
+          {Object.entries(question.options).map(([value, text], index) => (
+            <div key={value} className="flex items-start space-x-3 p-4 rounded-lg border border-amber-100 hover:bg-amber-50 transition-colors">
+              <RadioGroupItem value={value} id={`option-${index}`} className="mt-1" />
               <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                <div className="text-amber-700 leading-relaxed">{option.text}</div>
+                <div className="text-amber-700 leading-relaxed">{text}</div>
               </Label>
             </div>
           ))}

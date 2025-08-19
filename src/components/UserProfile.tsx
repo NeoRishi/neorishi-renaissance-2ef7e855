@@ -138,7 +138,7 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
                       {Object.entries(userProfile?.prakritiResult?.scores || {}).map(([dosha, score]) => (
                         <div key={dosha} className="bg-amber-50 p-4 rounded-lg">
                           <p className="text-sm font-medium text-amber-700">{dosha.toUpperCase()}</p>
-                          <p className="text-2xl font-bold text-amber-800">{score}</p>
+                          <p className="text-2xl font-bold text-amber-800">{String(score)}</p>
                         </div>
                       ))}
                     </div>
