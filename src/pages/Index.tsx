@@ -21,13 +21,13 @@ type Section = 'home' | 'goals' | 'assessment' | 'results' | 'settings' | 'subsc
 
 const SettingsPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center px-4 py-16">
-      <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8">
-        <h1 className="text-4xl font-extrabold text-amber-800 mb-6 text-center">Settings</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-xl bg-card/90 rounded-2xl shadow-2xl p-8">
+        <h1 className="text-4xl font-extrabold text-primary mb-6 text-center">Settings</h1>
         <div className="space-y-8">
           {/* Change Password */}
           <div>
-            <h2 className="text-2xl font-bold text-amber-700 mb-2">Change Password</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Change Password</h2>
             <div className="space-y-3">
               <Label htmlFor="current-password">Current Password</Label>
               <Input id="current-password" type="password" placeholder="Current password" />
@@ -35,33 +35,33 @@ const SettingsPage = () => {
               <Input id="new-password" type="password" placeholder="New password" />
               <Label htmlFor="confirm-password">Confirm New Password</Label>
               <Input id="confirm-password" type="password" placeholder="Confirm new password" />
-              <Button className="mt-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold">Update Password</Button>
+              <Button className="mt-2 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-bold">Update Password</Button>
             </div>
           </div>
           {/* Dark Mode Toggle */}
           <div>
-            <h2 className="text-2xl font-bold text-amber-700 mb-2">Appearance</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Appearance</h2>
             <div className="flex items-center justify-between">
-              <span className="text-lg text-amber-800 font-medium">Dark Mode</span>
+              <span className="text-lg text-foreground font-medium">Dark Mode</span>
               <Switch />
             </div>
           </div>
           {/* Notification Preferences */}
           <div>
-            <h2 className="text-2xl font-bold text-amber-700 mb-2">Notifications</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Notifications</h2>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-lg text-amber-800">Email Notifications</span>
+                <span className="text-lg text-foreground">Email Notifications</span>
                 <Switch />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-lg text-amber-800">SMS Notifications</span>
+                <span className="text-lg text-foreground">SMS Notifications</span>
                 <Switch />
               </div>
             </div>
           </div>
           {/* Delete Account */}
-          <div className="pt-4 border-t border-amber-100">
+          <div className="pt-4 border-t border-border">
             <h2 className="text-2xl font-bold text-red-700 mb-2">Danger Zone</h2>
             <Button variant="destructive" className="w-full font-bold">Delete Account</Button>
           </div>
@@ -284,10 +284,10 @@ const Index = () => {
     loadLatestAssessment();
   }, [user]);
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center space-x-4">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-2xl text-amber-800 font-medium">Loading your wellness journey...</div>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-2xl text-foreground font-medium">Loading your wellness journey...</div>
         </div>
       </div>;
   }
@@ -305,49 +305,49 @@ const Index = () => {
               </div>
 
               {/* Consolidated Problem/Solution Section */}
-              <div id="why-choose-section" className="py-20 px-4 bg-gradient-to-b from-orange-50 to-amber-50">
+              <div id="why-choose-section" className="py-20 px-4 bg-secondary/50">
                 <div className="max-w-6xl mx-auto">
                   <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold text-amber-800 mb-6">Transform Your Wellness Journey</h2>
-                    <p className="text-xl text-amber-700 mb-8 max-w-3xl mx-auto">
+                    <h2 className="text-4xl font-bold text-foreground mb-6">Transform Your Wellness Journey</h2>
+                    <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
                       Feeling tired, stuck, or out of sync with your body and mind? NeoRishi combines 5000-year-old Ayurvedic wisdom with modern AI to create your personalized path to wellness.
                     </p>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-8 mb-12">
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-8 text-center">
                         <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                           <Heart className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-3">Physical Wellness</h3>
-                        <p className="text-amber-700">Overcome low energy, poor digestion, and weight struggles</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-3">Physical Wellness</h3>
+                        <p className="text-muted-foreground">Overcome low energy, poor digestion, and weight struggles</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-8 text-center">
                         <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                           <Brain className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-3">Mental Clarity</h3>
-                        <p className="text-amber-700">Find focus, reduce anxiety, and boost motivation</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-3">Mental Clarity</h3>
+                        <p className="text-muted-foreground">Find focus, reduce anxiety, and boost motivation</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-8 text-center">
                         <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                           <Target className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-3">Spiritual Growth</h3>
-                        <p className="text-amber-700">Discover your purpose and inner peace</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-3">Spiritual Growth</h3>
+                        <p className="text-muted-foreground">Discover your purpose and inner peace</p>
                       </CardContent>
                     </Card>
                   </div>
 
                   <div className="text-center">
-                    <Button onClick={() => scrollTo('features-section')} className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <Button onClick={() => scrollTo('features-section')} className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-8 py-3 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
                       Explore How It Works
                       <Compass className="ml-2 w-5 h-5" />
                     </Button>
@@ -356,80 +356,80 @@ const Index = () => {
               </div>
 
               {/* Streamlined Features Section */}
-              <div id="features-section" className="py-20 px-4 bg-gradient-to-b from-amber-50 to-orange-50">
+              <div id="features-section" className="py-20 px-4 bg-background">
                 <div className="max-w-6xl mx-auto">
                   <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold text-amber-800 mb-6">Your Complete Wellness Toolkit</h2>
+                    <h2 className="text-4xl font-bold text-foreground mb-6">Your Complete Wellness Toolkit</h2>
                   </div>
 
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                      <CardContent className="p-6 text-center">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Compass className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Constitution Assessment</h3>
-                        <p className="text-amber-700 text-sm">Discover your unique Ayurvedic body type</p>
+                      <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <CardContent className="p-6 text-center">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Compass className="w-6 h-6 text-primary-foreground" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-foreground mb-2">Constitution Assessment</h3>
+                          <p className="text-muted-foreground text-sm">Discover your unique Ayurvedic body type</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-6 text-center">
-                        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Calendar className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Calendar className="w-6 h-6 text-primary-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Daily Routines</h3>
-                        <p className="text-amber-700 text-sm">Personalized schedules that fit your life</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Daily Routines</h3>
+                        <p className="text-muted-foreground text-sm">Personalized schedules that fit your life</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-6 text-center">
-                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Utensils className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Utensils className="w-6 h-6 text-primary-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Nutrition Plans</h3>
-                        <p className="text-amber-700 text-sm">Tailored diet recommendations</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Nutrition Plans</h3>
+                        <p className="text-muted-foreground text-sm">Tailored diet recommendations</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-6 text-center">
                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Brain className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Meditation & Breathwork</h3>
-                        <p className="text-amber-700 text-sm">Guided practices for your constitution</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Meditation & Breathwork</h3>
+                        <p className="text-muted-foreground text-sm">Guided practices for your constitution</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-6 text-center">
                         <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Target className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Adaptive Yoga</h3>
-                        <p className="text-amber-700 text-sm">Sequences tailored to your needs</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Adaptive Yoga</h3>
+                        <p className="text-muted-foreground text-sm">Sequences tailored to your needs</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="group bg-white/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Card className="group bg-card/80 hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <CardContent className="p-6 text-center">
                         <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Award className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-amber-800 mb-2">Progress Tracking</h3>
-                        <p className="text-amber-700 text-sm">Monitor your wellness journey</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Progress Tracking</h3>
+                        <p className="text-muted-foreground text-sm">Monitor your wellness journey</p>
                       </CardContent>
                     </Card>
                   </div>
 
                   {/* Single, focused CTA */}
                   <div className="text-center">
-                    <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-2xl p-8 shadow-2xl max-w-2xl mx-auto">
-                      <h3 className="text-2xl font-bold text-white mb-4">Ready to Begin?</h3>
-                      <p className="text-orange-100 mb-6">Join thousands discovering their optimal wellness path</p>
-                      <Button onClick={handleTakeAssessment} className="bg-white text-orange-600 hover:bg-orange-50 px-10 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <div className="bg-gradient-to-r from-primary to-primary-glow rounded-2xl p-8 shadow-2xl max-w-2xl mx-auto">
+                      <h3 className="text-2xl font-bold text-primary-foreground mb-4">Ready to Begin?</h3>
+                      <p className="text-primary-foreground/90 mb-6">Join thousands discovering their optimal wellness path</p>
+                      <Button onClick={handleTakeAssessment} className="bg-background text-foreground hover:bg-secondary px-10 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
                         Start Free Assessment
                         <Zap className="ml-2 w-5 h-5" />
                       </Button>
@@ -439,29 +439,29 @@ const Index = () => {
               </div>
 
               {/* Simplified About Section */}
-              <div id="about-section" className="py-20 px-4 bg-gradient-to-b from-orange-50 to-amber-50">
+              <div id="about-section" className="py-20 px-4 bg-secondary/30">
                 <div className="max-w-4xl mx-auto text-center">
-                  <h2 className="text-4xl font-bold text-amber-800 mb-8">About NeoRishi</h2>
-                  <p className="text-lg text-amber-700 leading-relaxed mb-12">
+                  <h2 className="text-4xl font-bold text-foreground mb-8">About NeoRishi</h2>
+                  <p className="text-lg text-muted-foreground leading-relaxed mb-12">
                     We combine 5000-year-old Ayurvedic wisdom with cutting-edge AI to make ancient wellness teachings accessible for modern life. Every recommendation is personalized to your unique constitution and goals.
                   </p>
                   
-                  <div className="grid md:grid-cols-4 gap-8 bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl p-8">
+                  <div className="grid md:grid-cols-4 gap-8 bg-card rounded-2xl p-8 border">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-800">10,000+</div>
-                      <div className="text-amber-600">Happy Users</div>
+                      <div className="text-3xl font-bold text-primary">10,000+</div>
+                      <div className="text-muted-foreground">Happy Users</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-800">4.9/5</div>
-                      <div className="text-amber-600">User Rating</div>
+                      <div className="text-3xl font-bold text-primary">4.9/5</div>
+                      <div className="text-muted-foreground">User Rating</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-800">50+</div>
-                      <div className="text-amber-600">Countries</div>
+                      <div className="text-3xl font-bold text-primary">50+</div>
+                      <div className="text-muted-foreground">Countries</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-800">99%</div>
-                      <div className="text-amber-600">Success Rate</div>
+                      <div className="text-3xl font-bold text-primary">99%</div>
+                      <div className="text-muted-foreground">Success Rate</div>
                     </div>
                   </div>
                 </div>
@@ -478,44 +478,44 @@ const Index = () => {
             </div>}
 
           {currentSection === 'results' && (
-            <div className="pt-16 min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+            <div className="pt-16 min-h-screen bg-background">
               <div className="max-w-4xl mx-auto px-4 py-10">
                 <div className="text-center mb-12">
-                  <h1 className="text-5xl font-extrabold text-amber-800 mb-3 tracking-tight drop-shadow-lg">Your Personalized Wellness Plan</h1>
-                  <p className="text-xl text-amber-700 font-medium mb-2">Based on your assessment and goals</p>
-                  <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-amber-500 mx-auto mb-4 rounded-full"></div>
+                  <h1 className="text-5xl font-extrabold text-foreground mb-3 tracking-tight drop-shadow-lg">Your Personalized Wellness Plan</h1>
+                  <p className="text-xl text-muted-foreground font-medium mb-2">Based on your assessment and goals</p>
+                  <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary-glow mx-auto mb-4 rounded-full"></div>
                 </div>
 
                 {/* Prakriti Results */}
-                <Card className="mb-10 shadow-xl border-amber-200 bg-white/90">
+                <Card className="mb-10 shadow-xl border bg-card">
                   <CardContent className="p-8">
-                    <h2 className="text-3xl font-bold text-amber-800 mb-6 flex items-center gap-3">
-                      <span className="inline-block w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center"><span className="text-white text-2xl">🧬</span></span>
+                    <h2 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+                      <span className="inline-block w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center"><span className="text-primary-foreground text-2xl">🧬</span></span>
                       Your Body-Mind Type
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                      <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl p-6 flex flex-col items-center shadow-sm">
-                        <h3 className="text-lg font-semibold text-amber-700 mb-2 uppercase tracking-wide">Current State</h3>
-                        <span className="inline-block text-3xl font-extrabold text-orange-700 bg-orange-100 px-6 py-2 rounded-full mb-2 shadow-md border border-orange-200">
+                      <div className="bg-secondary rounded-xl p-6 flex flex-col items-center shadow-sm">
+                        <h3 className="text-lg font-semibold text-foreground mb-2 uppercase tracking-wide">Current State</h3>
+                        <span className="inline-block text-3xl font-extrabold text-primary bg-primary/10 px-6 py-2 rounded-full mb-2 shadow-md border border-primary/20">
                           {userProfile?.prakritiResult?.dominantDosha || userProfile?.prakritiResult?.dominant}
                         </span>
-                        <p className="text-sm text-amber-600">Your most prominent dosha at this time</p>
+                        <p className="text-sm text-muted-foreground">Your most prominent dosha at this time</p>
                       </div>
-                      <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl p-6 flex flex-col items-center shadow-sm">
-                        <h3 className="text-lg font-semibold text-amber-700 mb-2 uppercase tracking-wide">Natural Constitution</h3>
-                        <span className="inline-block text-3xl font-extrabold text-amber-700 bg-amber-100 px-6 py-2 rounded-full mb-2 shadow-md border border-amber-200">
+                      <div className="bg-accent rounded-xl p-6 flex flex-col items-center shadow-sm">
+                        <h3 className="text-lg font-semibold text-foreground mb-2 uppercase tracking-wide">Natural Constitution</h3>
+                        <span className="inline-block text-3xl font-extrabold text-primary bg-primary/10 px-6 py-2 rounded-full mb-2 shadow-md border border-primary/20">
                           {userProfile?.prakritiResult?.constitution || userProfile?.prakritiResult?.constitutionType}
                         </span>
-                        <p className="text-sm text-amber-600">Your balanced state of being</p>
+                        <p className="text-sm text-muted-foreground">Your balanced state of being</p>
                       </div>
                     </div>
                     <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-amber-700 mb-3 flex items-center gap-2"><span className="text-xl">📊</span> Dosha Scores</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2"><span className="text-xl">📊</span> Dosha Scores</h3>
                       <div className="grid grid-cols-3 gap-6">
                         {(Object.entries(userProfile?.prakritiResult?.scores || {}) as [string, number][]).map(([dosha, score]) => (
-                          <div key={dosha} className="text-center bg-white rounded-lg p-4 shadow border border-amber-100">
-                            <div className="text-2xl font-bold text-amber-800 mb-1">{score}</div>
-                            <div className="text-base font-semibold text-amber-600 capitalize">{dosha}</div>
+                          <div key={dosha} className="text-center bg-background rounded-lg p-4 shadow border">
+                            <div className="text-2xl font-bold text-primary mb-1">{score}</div>
+                            <div className="text-base font-semibold text-muted-foreground capitalize">{dosha}</div>
                           </div>
                         ))}
                       </div>
@@ -524,7 +524,7 @@ const Index = () => {
                 </Card>
 
                 {/* Goals Summary */}
-                <Card className="mb-10 shadow-xl border-green-200 bg-white/90">
+                <Card className="mb-10 shadow-xl border bg-card">
                   <CardContent className="p-8">
                     <h2 className="text-3xl font-bold text-green-800 mb-6 flex items-center gap-3">
                       <span className="inline-block w-8 h-8 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center"><span className="text-white text-2xl">🎯</span></span>
@@ -564,7 +564,7 @@ const Index = () => {
                 </Card>
 
                 {/* Current State */}
-                <Card className="mb-10 shadow-xl border-blue-200 bg-white/90">
+                <Card className="mb-10 shadow-xl border bg-card">
                   <CardContent className="p-8">
                     <h2 className="text-3xl font-bold text-blue-800 mb-6 flex items-center gap-3">
                       <span className="inline-block w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center"><span className="text-white text-2xl">💡</span></span>
@@ -628,7 +628,7 @@ const Index = () => {
 
           {/* Floating action button */}
           <div className="fixed bottom-8 right-8 z-50">
-            <Button onClick={handleTakeAssessment} className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 group">
+            <Button onClick={handleTakeAssessment} className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 group">
               <Zap className="w-6 h-6 group-hover:animate-pulse" />
             </Button>
           </div>
