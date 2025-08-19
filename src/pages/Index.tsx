@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { GoalsQuestionnaire, goalCategories, foodPreferences, activityLevels } from "@/components/GoalsQuestionnaire";
 import { PrakritiAssessment } from "@/components/PrakritiAssessment";
-import { TopNavigation } from "@/components/TopNavigation";
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowDown, ArrowUp, Zap, Brain, Heart, Target, Compass, Lightbulb, Calendar, Utensils, Star, CheckCircle, Award } from "lucide-react";
@@ -293,73 +294,14 @@ const Index = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 relative overflow-hidden">
-          {/* Floating particles */}
-          <div className="fixed inset-0 pointer-events-none z-10">
-            {[...Array(20)].map((_, i) => <div key={i} className="absolute w-2 h-2 bg-amber-300 rounded-full opacity-20 animate-pulse" style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 2}s`,
-            animationDuration: `${2 + Math.random() * 3}s`
-          }} />)}
-          </div>
-
-          {/* Top Navigation */}
-          <TopNavigation onNavigate={handleNavigate} />
+        <div className="min-h-screen bg-background relative overflow-hidden">
+          {/* Header Navigation */}
+          <Header onNavigate={handleNavigate} />
 
           {currentSection === 'home' && <>
-              {/* Streamlined Hero Section */}
-              <div id="home" className="relative min-h-screen flex items-center justify-center px-4 pt-16">
-                {/* Simplified background elements */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-20 left-20 w-32 h-32 border-2 border-orange-400 rounded-full animate-pulse transition-transform duration-700" style={{
-                    transform: `translateY(${scrollY * 0.1}px)`
-                  }}></div>
-                  <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-amber-500 transform rotate-45 transition-transform duration-1000" style={{
-                    transform: `translateY(${scrollY * -0.15}px) rotate(45deg)`
-                  }}></div>
-                </div>
-
-                <div className="grid lg:grid-cols-2 gap-16 items-center z-20 max-w-7xl mx-auto">
-                  {/* Left side - Content */}
-                  <div className="text-center lg:text-left order-2 lg:order-1">
-                    <h1 className="text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 mb-4">
-                      NeoRishi
-                    </h1>
-                    <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-amber-500 mx-auto lg:mx-0 mb-6"></div>
-                    <p className="text-xl md:text-2xl text-amber-800 font-medium leading-relaxed mb-4">
-                      Your AI-Powered Spiritual Wellness Mentor
-                    </p>
-                    <p className="text-lg text-amber-700 mb-8">
-                      Ancient Wisdom • Modern Technology • Personalized Journey
-                    </p>
-
-                    <Button onClick={handleTakeAssessment} className="group bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-                      <span>Start Your Wellness Journey</span>
-                      <Zap className="ml-2 w-5 h-5 group-hover:animate-pulse" />
-                    </Button>
-                    <div className="text-sm text-amber-600 mt-3">
-                      Free Assessment • 7-Day Trial • Personalized Plan
-                    </div>
-                  </div>
-
-                  {/* Right side - Hero Image */}
-                  <div className="flex justify-center lg:justify-end order-1 lg:order-2">
-                    <div className="relative group max-w-sm">
-                      <div className="absolute -inset-4 bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500 animate-pulse"></div>
-                      <div className="relative bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl p-6 shadow-2xl">
-                        <img src="/lovable-uploads/3c67ba90-ae3a-4e7a-b07f-fa0a2b7edc68.png" alt="NeoRishi - Ancient Rishi with AI Technology" className="w-full h-auto rounded-xl" />
-                        <div className="absolute inset-6 bg-gradient-to-t from-transparent via-amber-500/10 to-transparent rounded-xl pointer-events-none group-hover:via-amber-500/20 transition-all duration-500"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-30">
-                  <Button variant="ghost" onClick={() => scrollTo('why-choose-section')} className="text-amber-700 hover:text-amber-800 hover:bg-amber-100 rounded-full p-4">
-                    <ArrowDown className="w-6 h-6" />
-                  </Button>
-                </div>
+              {/* Hero Section */}
+              <div id="home">
+                <Hero onTakeAssessment={handleTakeAssessment} />
               </div>
 
               {/* Consolidated Problem/Solution Section */}

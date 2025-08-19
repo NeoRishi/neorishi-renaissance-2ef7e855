@@ -1,17 +1,25 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import logoIcon from '@/assets/logo-icon.png';
+import { Menu, X, Home, Star, Users, BookOpen, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserMenu } from "./UserMenu";
+import { useNavigate } from "react-router-dom";
 
-export const Header = () => {
+interface HeaderProps {
+  onNavigate: (section: 'home' | 'subscription' | 'goals' | 'assessment' | 'features' | 'about') => void;
+}
+
+export const Header = ({ onNavigate }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Home', href: '#home' },
-    { name: 'Features', href: '#features' },
-    { name: 'About', href: '#about' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', action: () => onNavigate('home'), icon: Home },
+    { name: 'Features', action: () => onNavigate('features'), icon: Star },
+    { name: 'About Us', action: () => onNavigate('about'), icon: Users },
+    { name: 'Blog', action: () => navigate('/blog'), icon: BookOpen },
   ];
 
   return (
@@ -20,16 +28,13 @@ export const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.div 
-            className="flex items-center space-x-3"
+            className="flex items-center space-x-3 cursor-pointer"
+            onClick={() => onNavigate('home')}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <img 
-              src={logoIcon} 
-              alt="NeoRishi Logo" 
-              className="w-8 h-8"
-            />
+            <span className="text-3xl">🧘</span>
             <span className="text-2xl font-bold text-foreground">NeoRishi</span>
           </motion.div>
 
@@ -41,17 +46,30 @@ export const Header = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             {navigation.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                onClick={item.action}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
               >
-                {item.name}
-              </a>
+                <item.icon className="w-4 h-4" />
+                <span>{item.name}</span>
+              </button>
             ))}
-            <Button variant="premium" size="sm">
-              Sign In
-            </Button>
+            
+            {/* Auth Section */}
+            {user ? (
+              <UserMenu />
+            ) : (
+              <Button 
+                onClick={() => navigate('/auth')}
+                variant="premium" 
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In</span>
+              </Button>
+            )}
           </motion.div>
 
           {/* Mobile menu button */}
@@ -76,18 +94,36 @@ export const Header = () => {
           >
             <div className="flex flex-col space-y-4">
               {navigation.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    item.action();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
-                  {item.name}
-                </a>
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.name}</span>
+                </button>
               ))}
-              <Button variant="premium" size="sm" className="w-fit">
-                Sign In
-              </Button>
+              
+              {/* Mobile Auth Section */}
+              {user ? (
+                <UserMenu />
+              ) : (
+                <Button 
+                  onClick={() => {
+                    navigate('/auth');
+                    setIsOpen(false);
+                  }}
+                  variant="premium" 
+                  size="sm" 
+                  className="w-fit flex items-center space-x-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </Button>
+              )}
             </div>
           </motion.div>
         )}

@@ -6,7 +6,11 @@ import heroMeditation from '@/assets/hero-meditation.jpg';
 
 const rotatingPhrases = ["Think like", "Act like a", "Be a"];
 
-export const Hero = () => {
+interface HeroProps {
+  onTakeAssessment: () => void;
+}
+
+export const Hero = ({ onTakeAssessment }: HeroProps) => {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 
   useEffect(() => {
@@ -73,6 +77,7 @@ export const Hero = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <Button 
+                onClick={onTakeAssessment}
                 size="lg" 
                 className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground text-lg px-8 py-6 rounded-2xl shadow-elegant group"
               >
