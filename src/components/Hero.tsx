@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import heroMeditation from '@/assets/hero-meditation.jpg';
+
 
 const rotatingPhrases = ["Think like", "Act like a", "Be a"];
 
@@ -96,7 +96,7 @@ export const Hero = ({ onTakeAssessment }: HeroProps) => {
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl">
               <img 
-                src={heroMeditation} 
+                src="/lovable-uploads/3c67ba90-ae3a-4e7a-b07f-fa0a2b7edc68.png" 
                 alt="Meditation and spiritual wellness through AI-powered Ayurveda"
                 className="w-full h-[600px] object-cover"
               />
