@@ -301,7 +301,7 @@ const Index = () => {
           {currentSection === 'home' && <>
               {/* Hero Section */}
               <div id="home">
-                <Hero onTakeAssessment={handleTakeAssessment} />
+                <Hero />
               </div>
 
               {/* Consolidated Problem/Solution Section */}

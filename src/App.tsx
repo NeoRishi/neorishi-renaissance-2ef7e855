@@ -10,6 +10,8 @@ import Blog from "./pages/Blog";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import SettingsPage from "./pages/Settings";
+import Onboarding from "./pages/Onboarding";
+import LunarDashboard from "./pages/LunarDashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/lunar-dashboard" element={<LunarDashboard />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

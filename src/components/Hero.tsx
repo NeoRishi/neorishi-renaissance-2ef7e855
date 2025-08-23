@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 
 const rotatingPhrases = ["Think like", "Act like a", "Be a"];
 
-interface HeroProps {
-  onTakeAssessment: () => void;
-}
-
-export const Hero = ({ onTakeAssessment }: HeroProps) => {
+export const Hero = () => {
+  const navigate = useNavigate();
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 
   useEffect(() => {
@@ -77,7 +75,7 @@ export const Hero = ({ onTakeAssessment }: HeroProps) => {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <Button 
-                onClick={onTakeAssessment}
+                onClick={() => navigate('/onboarding')}
                 size="lg" 
                 className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground text-lg px-8 py-6 rounded-2xl shadow-elegant group"
               >
