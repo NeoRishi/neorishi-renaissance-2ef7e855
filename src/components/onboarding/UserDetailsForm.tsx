@@ -3,17 +3,14 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
-import { CalendarIcon, ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
+import { DropdownDatePicker } from '@/components/ui/dropdown-date-picker';
+import { DropdownTimePicker } from '@/components/ui/dropdown-time-picker';
 import { UserDetails } from '@/data/onboardingQuestions';
 
 const userDetailsSchema = z.object({
@@ -155,36 +152,15 @@ export const UserDetailsForm = ({ onSubmit, onPrevious, isLoading = false }: Use
                   control={form.control}
                   name="dateOfBirth"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Date of Birth</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "rounded-xl border-muted/50 hover:border-primary/50 justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(field.value, "PPP") : "Pick a date"}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DropdownDatePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select your birth date"
+                        />
+                      </FormControl>
                       <FormDescription>
                         Used for astrological calculations and personalized guidance
                       </FormDescription>
@@ -200,10 +176,10 @@ export const UserDetailsForm = ({ onSubmit, onPrevious, isLoading = false }: Use
                     <FormItem>
                       <FormLabel>Time of Birth</FormLabel>
                       <FormControl>
-                        <Input
-                          type="time"
-                          {...field}
-                          className="rounded-xl border-muted/50 focus:border-primary/50 transition-colors"
+                        <DropdownTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select your birth time"
                         />
                       </FormControl>
                       <FormDescription>

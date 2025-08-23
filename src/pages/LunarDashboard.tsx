@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,27 +15,84 @@ import {
   Heart, 
   TrendingUp,
   Sparkles,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react';
 import { OnboardingResponses, UserDetails, onboardingQuestions } from '@/data/onboardingQuestions';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const LunarDashboard = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [onboardingData, setOnboardingData] = useState<OnboardingResponses>({});
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
 
   useEffect(() => {
-    // Load data from localStorage (temporary until auth is implemented)
-    const savedResponses = localStorage.getItem('onboarding_responses');
-    const savedDetails = localStorage.getItem('user_details');
-    
-    if (savedResponses) {
-      setOnboardingData(JSON.parse(savedResponses));
+    if (!loading && !user) {
+      navigate('/auth');
     }
-    
-    if (savedDetails) {
-      setUserDetails(JSON.parse(savedDetails));
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          // Load onboarding responses from Supabase
+          const { data: onboardingResponse } = await supabase
+            .from('onboarding_responses')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          if (onboardingResponse) {
+            setOnboardingData((onboardingResponse.responses as OnboardingResponses) || {});
+            setUserDetails({
+              fullName: onboardingResponse.full_name,
+              phone: onboardingResponse.phone,
+              email: onboardingResponse.email,
+              dateOfBirth: onboardingResponse.date_of_birth ? new Date(onboardingResponse.date_of_birth) : undefined,
+              timeOfBirth: onboardingResponse.time_of_birth,
+              birthPlace: onboardingResponse.birth_place,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [user]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      toast({
+        title: "Signed out successfully",
+        description: "Thank you for using NeoRishi!",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
-  }, []);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-900/20 to-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const getAnswerText = (questionId: number, answerId: string) => {
     const question = onboardingQuestions.find(q => q.id === questionId);
@@ -73,20 +132,31 @@ const LunarDashboard = () => {
                 Your personalized lunar wellness journey begins now
               </p>
             </div>
-            <div className="text-right">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <Calendar className="w-4 h-4" />
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </div>
+                <Badge variant="secondary" className="bg-gradient-to-r from-primary/20 to-primary-glow/20 text-primary border-primary/30">
+                  <Moon className="w-3 h-3 mr-1" />
+                  New Moon Phase
+                </Badge>
               </div>
-              <Badge variant="secondary" className="bg-gradient-to-r from-primary/20 to-primary-glow/20 text-primary border-primary/30">
-                <Moon className="w-3 h-3 mr-1" />
-                New Moon Phase
-              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </motion.div>

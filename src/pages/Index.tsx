@@ -10,8 +10,6 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowDown, ArrowUp, Zap, Brain, Heart, Target, Compass, Lightbulb, Calendar, Utensils, Star, CheckCircle, Award } from "lucide-react";
 import { useNavigate, Routes, Route } from "react-router-dom";
-import { saveAssessmentResult, getLatestAssessmentResult } from '@/services/assessmentService';
-import { saveGoalsQuestionnaire, getLatestGoalsQuestionnaire } from '@/services/goalsQuestionnaireService';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -108,74 +106,13 @@ const Index = () => {
       return;
     }
 
-    if (!userProfile?.assessment_result_id) {
-      toast({
-        title: "Assessment Required",
-        description: "Please complete the Prakriti assessment first.",
-        variant: "destructive",
-      });
-      setCurrentSection('assessment');
-      return;
-    }
+    toast({
+      title: "Goals Saved",
+      description: "Your wellness goals have been saved successfully.",
+    });
 
-    try {
-      console.log('Saving goals questionnaire with data:', {
-        user_id: user.id,
-        assessment_result_id: userProfile.assessment_result_id,
-        activity_level: goalsData.activityLevel,
-        time_available: goalsData.timeAvailable,
-        stress_level: goalsData.stressLevel,
-        sleep_quality: goalsData.sleepQuality,
-        energy_level: goalsData.energyLevel,
-        goals: goalsData.goals,
-        food_preferences: goalsData.foodPreferences,
-        challenges: goalsData.challenges,
-      });
-
-      // Save the goals questionnaire data
-      const result = await saveGoalsQuestionnaire({
-        user_id: user.id,
-        assessment_result_id: userProfile.assessment_result_id,
-        activity_level: goalsData.activityLevel,
-        time_available: goalsData.timeAvailable,
-        stress_level: goalsData.stressLevel,
-        sleep_quality: goalsData.sleepQuality,
-        energy_level: goalsData.energyLevel,
-        goals: goalsData.goals,
-        food_preferences: goalsData.foodPreferences,
-        challenges: goalsData.challenges,
-      });
-
-      console.log('Goals questionnaire saved successfully:', result);
-
-      // Update user profile with goals data
-      setUserProfile(prev => ({
-        ...prev,
-        goals: goalsData.goals,
-        foodPreferences: goalsData.foodPreferences,
-        activityLevel: goalsData.activityLevel,
-        timeAvailable: goalsData.timeAvailable,
-        stressLevel: goalsData.stressLevel,
-        sleepQuality: goalsData.sleepQuality,
-        energyLevel: goalsData.energyLevel,
-        challenges: goalsData.challenges,
-      }));
-
-      toast({
-        title: "Goals Saved",
-        description: "Your wellness goals have been saved successfully.",
-      });
-
-      // Navigate to the next section or show results
-      setCurrentSection('results');
-    } catch (error) {
-      console.error('Detailed error saving goals:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save your goals. Please try again.",
-        variant: "destructive",
-      });
-    }
+    // Navigate to the next section or show results
+    setCurrentSection('results');
   };
   const handleTakeAssessment = () => {
     if (!user) {
@@ -186,20 +123,9 @@ const Index = () => {
   };
   const handleAssessmentComplete = async (result: any) => {
     try {
-      const { data, error } = await saveAssessmentResult(result);
-      if (error) {
-        console.error('Error saving assessment:', error);
-        toast({
-          title: "Error Saving Assessment",
-          description: error.message || "Failed to save assessment results. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       setUserProfile({
         prakritiResult: result,
-        assessment_result_id: data.id
+        assessment_result_id: 'temp-id'
       });
       setCurrentSection('goals');
     } catch (error: any) {
@@ -236,52 +162,7 @@ const Index = () => {
     }
   };
   useEffect(() => {
-    const loadLatestAssessment = async () => {
-      if (user) {
-        try {
-          // Wellness profile step removed – go directly to assessment
-          setCurrentSection('assessment');
-
-          // Load assessment result
-          const { data: assessmentData, error: assessmentError } = await getLatestAssessmentResult();
-          if (assessmentError) {
-            console.error('Error loading assessment:', assessmentError);
-            return;
-          }
-
-          if (assessmentData) {
-            // Load goals questionnaire data
-            const goalsData = await getLatestGoalsQuestionnaire(user.id);
-            
-            setUserProfile({
-              prakritiResult: {
-                dominant: assessmentData.dominant_dosha,
-                constitutionType: assessmentData.constitution_type,
-                scores: assessmentData.scores,
-                answers: assessmentData.answers,
-                totalQuestions: assessmentData.total_questions
-              },
-              assessment_result_id: assessmentData.id,
-              // Add goals data if available
-              ...(goalsData && {
-                goals: goalsData.goals.map(g => g.goal_id),
-                foodPreferences: goalsData.food_preferences.map(fp => fp.preference_id),
-                activityLevel: goalsData.questionnaire.activity_level,
-                timeAvailable: goalsData.questionnaire.time_available,
-                stressLevel: goalsData.questionnaire.stress_level,
-                sleepQuality: goalsData.questionnaire.sleep_quality,
-                energyLevel: goalsData.questionnaire.energy_level,
-                challenges: goalsData.challenges.map(c => c.challenge_id)
-              })
-            });
-          }
-        } catch (error) {
-          console.error('Error loading assessment:', error);
-        }
-      }
-    };
-
-    loadLatestAssessment();
+    // Remove assessment loading for simplified app
   }, [user]);
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">

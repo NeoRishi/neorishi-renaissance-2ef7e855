@@ -1,369 +1,373 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Alert } from '@/components/ui/alert';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Mail, Phone, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { normalizePhoneNumber } from '@/utils/phoneUtils';
-import { supabase } from '@/integrations/supabase/client';
-import { FcGoogle } from 'react-icons/fc';
-import { PhoneNumberInput } from '@/components/PhoneNumberInput';
-import { countryCodes } from '@/utils/countryCodes';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
-export default function Auth() {
+const signInSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+const signUpSchema = z.object({
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type SignInFormData = z.infer<typeof signInSchema>;
+type SignUpFormData = z.infer<typeof signUpSchema>;
+
+const Auth = () => {
+  const [activeTab, setActiveTab] = useState('signin');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, verifyOTP, sendOTP, isTestMode, connectionError } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [isPhoneSignIn, setIsPhoneSignIn] = useState(false);
-  const [showOTPInput, setShowOTPInput] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
 
-  // Form fields
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [country, setCountry] = useState('IN'); // Default to India
-  const [otp, setOTP] = useState('');
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const signInForm = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: '', password: '' }
+  });
 
-  // forgot-password flow
-  const [showForgot, setShowForgot] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
+  const signUpForm = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' }
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if ((isSignUp || isPhoneSignIn) && phone.length !== 10) {
-      setError('Phone number must be 10 digits.');
-      return;
-    }
-    
-    setLoading(true);
-
+  const handleSignIn = async (data: SignInFormData) => {
+    setIsLoading(true);
     try {
-      const selectedCountry = countryCodes.find(c => c.code === country);
-      if (!selectedCountry) {
-        setError('Invalid country selected.');
-        setLoading(false);
+      const { error } = await signIn(data.email, data.password);
+      
+      if (error) {
+        toast({
+          title: "Sign in failed",
+          description: error.message || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
-      const fullPhoneNumber = selectedCountry.dial_code + phone;
 
-      if (isSignUp) {
-        const { data, error } = await signUp(email, password, fullName, fullPhoneNumber, country);
-        if (error) {
-          setError(error.message);
-          setLoading(false);
-          return;
-        }
-        
-        if (data && !data.session) {
-          setAwaitingConfirmation(true); // Show confirmation message
-        } else {
-          // On successful signup with session, redirect to home
-          navigate('/');
-        }
-      } else if (isPhoneSignIn) {
-        if (!showOTPInput) {
-          // First send OTP
-          const normalizedPhone = normalizePhoneNumber(fullPhoneNumber, country as any);
-          const { error } = await sendOTP(normalizedPhone);
-          if (error) {
-            setError(error.message);
-            return;
-          }
-          setShowOTPInput(true);
-        } else {
-          // Verify OTP
-          const normalizedPhone = normalizePhoneNumber(fullPhoneNumber, country as any);
-          const { error } = await verifyOTP(normalizedPhone, otp);
-          if (error) {
-            setError(error.message);
-            return;
-          }
-          // On successful verification, redirect to home
-          navigate('/');
-        }
-      } else {
-        // Regular email sign in
-        const { error } = await signIn(email, password);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        // On successful sign in, redirect to home
-        navigate('/');
-      }
-    } catch (err: any) {
-      console.error('Auth error:', err);
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    setError(null);
-    try {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/'
-        }
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully signed in.",
       });
-    } catch (err: any) {
-      setError(err.message || 'Google authentication failed');
-    }
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResetLoading(true);
-    setError(null);
-    try {
-      const { error } = await useAuth().resetPassword(resetEmail);
-      if (error) {
-        setError(error.message);
-      } else {
-        setShowForgot(false);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send reset link');
+      
+      navigate('/lunar-dashboard');
+    } catch (error) {
+      toast({
+        title: "Sign in failed", 
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setResetLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const toggleAuthMode = () => {
-    setIsSignUp(!isSignUp);
-    setIsPhoneSignIn(false);
-    setShowOTPInput(false);
-    setError(null);
-    setOTP('');
-  };
+  const handleSignUp = async (data: SignUpFormData) => {
+    setIsLoading(true);
+    try {
+      const { error } = await signUp(data.email, data.password, data.fullName, '', '');
+      
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message || "Failed to create account. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-  const togglePhoneMode = () => {
-    setIsPhoneSignIn(!isPhoneSignIn);
-    setShowOTPInput(false);
-    setError(null);
-    setOTP('');
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account, then sign in.",
+      });
+      
+      setActiveTab('signin');
+      signUpForm.reset();
+    } catch (error) {
+      toast({
+        title: "Sign up failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full space-y-8 p-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
-          </h2>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-slate-900/20 to-background">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(253,186,116,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,146,60,0.08),transparent_50%)]" />
+      
+      <div className="relative z-10 container mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-screen">
+        
+        {/* Back to Home Link */}
+        <Link 
+          to="/"
+          className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </Link>
 
-        {(error || connectionError) && (
-          <Alert variant="destructive" className="mb-4">
-            {connectionError || error}
-          </Alert>
-        )}
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent mb-4">
+            Welcome to NeoRishi
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-md mx-auto">
+            Sign in to access your personalized wellness journey
+          </p>
+        </motion.div>
 
-        {/* Google sign-in */}
-        <Button type="button" variant="outline" className="w-full flex items-center justify-center gap-2" onClick={handleGoogleAuth}>
-          <FcGoogle className="text-xl" /> Continue with Google
-        </Button>
-
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300" />
-          <span className="mx-2 text-sm text-gray-500">or</span>
-          <div className="flex-grow border-t border-gray-300" />
-        </div>
-
-        {awaitingConfirmation ? (
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900">Please check your email</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              A confirmation link has been sent to <strong>{email}</strong>. Please click the link to complete your registration.
-            </p>
-          </div>
-        ) : (
-          <>
-            {!showForgot && (
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {isSignUp && (
-                  <div>
-                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                      Full Name
-                    </label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="mt-1"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                )}
-
-                {(!isPhoneSignIn || isSignUp) && (
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email address
-                    </label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required={!isPhoneSignIn}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                )}
-
-                {(isPhoneSignIn || isSignUp) && (
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                      Phone Number
-                    </label>
-                    <PhoneNumberInput
-                      country={country}
-                      onCountryChange={setCountry}
-                      phoneNumber={phone}
-                      onPhoneNumberChange={setPhone}
-                      required={isPhoneSignIn || isSignUp}
-                      className="mt-1"
-                    />
-                  </div>
-                )}
-
-                {(!isPhoneSignIn || isSignUp) && (
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                      Password
-                    </label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                      required={!isPhoneSignIn}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1"
-                      placeholder="••••••••"
-                    />
-                  </div>
-                )}
-
-                {isPhoneSignIn && showOTPInput && (
-                  <div>
-                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
-                      One-Time Password
-                    </label>
-                    <Input
-                      id="otp"
-                      name="otp"
-                      type="text"
-                      required
-                      value={otp}
-                      onChange={(e) => setOTP(e.target.value)}
-                      className="mt-1"
-                      placeholder={isTestMode ? '123456' : '000000'}
-                    />
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-4">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loading}
-                  >
-                    {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : isPhoneSignIn ? (showOTPInput ? 'Verify OTP' : 'Send OTP') : 'Sign In'}
-                  </Button>
-
-                  {!isSignUp && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={togglePhoneMode}
-                      className="w-full"
-                    >
-                      {isPhoneSignIn ? 'Sign in with Email' : 'Sign in with Phone'}
-                    </Button>
-                  )}
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={toggleAuthMode}
-                    className="w-full"
-                  >
-                    {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {showForgot && (
-              <form className="space-y-6" onSubmit={handleResetPassword}>
-                <div>
-                  <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700">Email address</label>
-                  <Input id="resetEmail" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} required className="mt-1" placeholder="you@example.com" />
-                </div>
-                <div className="flex flex-col gap-4">
-                  <Button type="submit" disabled={resetLoading} className="w-full">{resetLoading ? 'Sending...' : 'Send reset link'}</Button>
-                  <Button type="button" variant="ghost" className="w-full" onClick={() => setShowForgot(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            <div className="text-sm text-center">
-              <button
-                type="button"
-                onClick={showForgot ? () => setShowForgot(false) : toggleAuthMode}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                {showForgot ? 'Back to Sign In' : isSignUp ? 'Already have an account? Sign In' : 'Don\'t have an account? Sign Up'}
-              </button>
-              {!isSignUp && !showForgot && (
-                <>
-                  <span className="mx-2">|</span>
-                  <button
-                    type="button"
-                    onClick={togglePhoneMode}
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    {isPhoneSignIn ? 'Sign in with Email' : 'Sign in with Phone'}
-                  </button>
-                </>
-              )}
-            </div>
+        {/* Auth Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-md"
+        >
+          <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {activeTab === 'signin' ? 'Sign In' : 'Create Account'}
+              </CardTitle>
+            </CardHeader>
             
-            {!showForgot && !isPhoneSignIn && (
-              <div className="text-center text-sm">
-                <button
-                  type="button"
-                  onClick={() => setShowForgot(true)}
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot your password?
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </Card>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="signin">
+                  <Form {...signInForm}>
+                    <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+                      <FormField
+                        control={signInForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type="email"
+                                  placeholder="Enter your email"
+                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signInForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Enter your password"
+                                  className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full mt-6 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
+                      >
+                        {isLoading ? 'Signing in...' : 'Sign In'}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+                
+                <TabsContent value="signup">
+                  <Form {...signUpForm}>
+                    <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+                      <FormField
+                        control={signUpForm.control}
+                        name="fullName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  placeholder="Enter your full name"
+                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signUpForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type="email"
+                                  placeholder="Enter your email"
+                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signUpForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Create a password"
+                                  className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signUpForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Confirm Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Confirm your password"
+                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full mt-6 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
+                      >
+                        {isLoading ? 'Creating Account...' : 'Create Account'}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        {/* Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-center mt-8"
+        >
+          <p className="text-sm text-muted-foreground">
+            By signing up, you agree to our Terms of Service and Privacy Policy.
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
-}
+};
+
+export default Auth;

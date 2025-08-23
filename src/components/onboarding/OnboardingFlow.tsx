@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { OnboardingProgress } from './OnboardingProgress';
 import { OnboardingQuestion } from './OnboardingQuestion';
@@ -15,6 +16,7 @@ export const OnboardingFlow = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const totalSteps = onboardingQuestions.length + 1; // +1 for user details form
   const currentQuestion = onboardingQuestions.find(q => q.id === currentStep);
@@ -42,22 +44,42 @@ export const OnboardingFlow = () => {
     setIsSubmitting(true);
     
     try {
-      // For now, we'll store this locally since authentication isn't implemented
-      // Once auth is added, we'll save to Supabase with the user's ID
-      
-      // Save onboarding responses to localStorage for now
-      localStorage.setItem('onboarding_responses', JSON.stringify(responses));
-      localStorage.setItem('user_details', JSON.stringify(userDetails));
-      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to continue with your onboarding.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      // Save onboarding responses to Supabase
+      const { error } = await supabase
+        .from('onboarding_responses')
+        .insert({
+          user_id: user.id,
+          responses: responses as any,
+          full_name: userDetails.fullName,
+          phone: userDetails.phone,
+          email: userDetails.email,
+          date_of_birth: userDetails.dateOfBirth?.toISOString().split('T')[0] || null,
+          time_of_birth: userDetails.timeOfBirth || null,
+          birth_place: userDetails.birthPlace,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Show email verification notice
       toast({
-        title: "Welcome to NeoRishi! 🌟",
-        description: "Your personalized journey is being prepared. Redirecting to your dashboard...",
+        title: "Profile saved! 📧",
+        description: "Your onboarding is complete. Please verify your email or phone to access your dashboard.",
       });
       
-      // Simulate processing time
-      setTimeout(() => {
-        navigate('/lunar-dashboard');
-      }, 2000);
+      // Redirect to dashboard
+      navigate('/lunar-dashboard');
       
     } catch (error) {
       console.error('Error saving onboarding data:', error);
