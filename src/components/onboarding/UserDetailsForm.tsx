@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, Sparkles, Eye, EyeOff, Lock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +17,14 @@ const userDetailsSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().min(10, 'Please enter a valid phone number'),
   email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
   dateOfBirth: z.date().optional(),
   timeOfBirth: z.string().optional(),
   birthPlace: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type UserDetailsFormData = z.infer<typeof userDetailsSchema>;
@@ -31,12 +36,15 @@ interface UserDetailsFormProps {
 }
 
 export const UserDetailsForm = ({ onSubmit, onPrevious, isLoading = false }: UserDetailsFormProps) => {
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<UserDetailsFormData>({
     resolver: zodResolver(userDetailsSchema),
     defaultValues: {
       fullName: '',
       phone: '',
       email: '',
+      password: '',
+      confirmPassword: '',
       timeOfBirth: '',
       birthPlace: '',
     }
@@ -47,6 +55,7 @@ export const UserDetailsForm = ({ onSubmit, onPrevious, isLoading = false }: Use
       fullName: data.fullName,
       phone: data.phone,
       email: data.email,
+      password: data.password,
       dateOfBirth: data.dateOfBirth,
       timeOfBirth: data.timeOfBirth,
       birthPlace: data.birthPlace,
@@ -129,6 +138,63 @@ export const UserDetailsForm = ({ onSubmit, onPrevious, isLoading = false }: Use
                           {...field}
                           className="rounded-xl border-muted/50 focus:border-primary/50 transition-colors"
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Create Password *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a secure password"
+                            className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50 transition-colors"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Confirm your password"
+                            className="pl-10 rounded-xl border-muted/50 focus:border-primary/50 transition-colors"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

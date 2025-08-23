@@ -108,6 +108,16 @@ export interface UserDetails {
   fullName: string;
   phone: string;
   email: string;
+  password: string;
+  dateOfBirth?: Date;
+  timeOfBirth?: string;
+  birthPlace?: string;
+}
+
+export interface UserDisplayDetails {
+  fullName: string;
+  phone: string;
+  email: string;
   dateOfBirth?: Date;
   timeOfBirth?: string;
   birthPlace?: string;

@@ -4,13 +4,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Mail, Phone, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Mail, ArrowLeft, Eye, EyeOff, Lock, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,35 +18,18 @@ const signInSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-const signUpSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
 type SignInFormData = z.infer<typeof signInSchema>;
-type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const Auth = () => {
-  const [activeTab, setActiveTab] = useState('signin');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const { toast } = useToast();
 
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' }
-  });
-
-  const signUpForm = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' }
   });
 
   const handleSignIn = async (data: SignInFormData) => {
@@ -81,36 +63,8 @@ const Auth = () => {
     }
   };
 
-  const handleSignUp = async (data: SignUpFormData) => {
-    setIsLoading(true);
-    try {
-      const { error } = await signUp(data.email, data.password, data.fullName, '', '');
-      
-      if (error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message || "Failed to create account. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Account created successfully!",
-        description: "Please check your email to verify your account, then sign in.",
-      });
-      
-      setActiveTab('signin');
-      signUpForm.reset();
-    } catch (error) {
-      toast({
-        title: "Sign up failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleStartJourney = () => {
+    navigate('/onboarding');
   };
 
   return (
@@ -137,10 +91,10 @@ const Auth = () => {
           className="text-center mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent mb-4">
-            Welcome to NeoRishi
+            Welcome Back to NeoRishi
           </h1>
           <p className="text-lg text-muted-foreground max-w-md mx-auto">
-            Sign in to access your personalized wellness journey
+            Sign in to continue your personalized wellness journey
           </p>
         </motion.div>
 
@@ -154,202 +108,100 @@ const Auth = () => {
           <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
               <CardTitle className="text-xl font-semibold text-foreground">
-                {activeTab === 'signin' ? 'Sign In' : 'Create Account'}
+                Sign In
               </CardTitle>
             </CardHeader>
             
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="signin">
-                  <Form {...signInForm}>
-                    <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                      <FormField
-                        control={signInForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type="email"
-                                  placeholder="Enter your email"
-                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={signInForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="Enter your password"
-                                  className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                >
-                                  {showPassword ? (
-                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full mt-6 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
-                      >
-                        {isLoading ? 'Signing in...' : 'Sign In'}
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-                
-                <TabsContent value="signup">
-                  <Form {...signUpForm}>
-                    <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                      <FormField
-                        control={signUpForm.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  placeholder="Enter your full name"
-                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={signUpForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type="email"
-                                  placeholder="Enter your email"
-                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={signUpForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="Create a password"
-                                  className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                >
-                                  {showPassword ? (
-                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={signUpForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="Confirm your password"
-                                  className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full mt-6 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
-                      >
-                        {isLoading ? 'Creating Account...' : 'Create Account'}
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-              </Tabs>
+            <CardContent className="space-y-6">
+              <Form {...signInForm}>
+                <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+                  <FormField
+                    control={signInForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              className="pl-10 rounded-xl border-muted/50 focus:border-primary/50"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={signInForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter your password"
+                              className="pl-10 pr-10 rounded-xl border-muted/50 focus:border-primary/50"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full mt-6 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </form>
+              </Form>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-muted/30" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 text-muted-foreground bg-background">New to NeoRishi?</span>
+                </div>
+              </div>
+
+              {/* Start Journey Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleStartJourney}
+                className="w-full flex items-center gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                Start My Journey
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

@@ -18,7 +18,7 @@ import {
   Clock,
   LogOut
 } from 'lucide-react';
-import { OnboardingResponses, UserDetails, onboardingQuestions } from '@/data/onboardingQuestions';
+import { OnboardingResponses, UserDisplayDetails, onboardingQuestions } from '@/data/onboardingQuestions';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,7 +27,7 @@ const LunarDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [onboardingData, setOnboardingData] = useState<OnboardingResponses>({});
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDisplayDetails | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {

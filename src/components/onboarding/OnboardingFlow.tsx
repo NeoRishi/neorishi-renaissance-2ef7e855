@@ -16,7 +16,7 @@ export const OnboardingFlow = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, signUp } = useAuth();
   
   const totalSteps = onboardingQuestions.length + 1; // +1 for user details form
   const currentQuestion = onboardingQuestions.find(q => q.id === currentStep);
@@ -44,13 +44,30 @@ export const OnboardingFlow = () => {
     setIsSubmitting(true);
     
     try {
-      if (!user) {
+      // First create the user account
+      const { data, error: signUpError } = await signUp(
+        userDetails.email,
+        userDetails.password,
+        userDetails.fullName,
+        userDetails.phone,
+        'US' // Default country, you might want to make this configurable
+      );
+
+      if (signUpError) {
         toast({
-          title: "Authentication required",
-          description: "Please sign in to continue with your onboarding.",
+          title: "Account creation failed",
+          description: signUpError.message || "Failed to create account. Please try again.",
           variant: "destructive",
         });
-        navigate('/auth');
+        return;
+      }
+
+      if (!data?.user) {
+        toast({
+          title: "Account creation failed",
+          description: "Failed to create account. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -58,7 +75,7 @@ export const OnboardingFlow = () => {
       const { error } = await supabase
         .from('onboarding_responses')
         .insert({
-          user_id: user.id,
+          user_id: data.user.id,
           responses: responses as any,
           full_name: userDetails.fullName,
           phone: userDetails.phone,
@@ -69,20 +86,20 @@ export const OnboardingFlow = () => {
         });
 
       if (error) {
-        throw error;
+        console.error('Error saving onboarding data:', error);
       }
 
-      // Show email verification notice
+      // Show success message
       toast({
-        title: "Profile saved! 📧",
-        description: "Your onboarding is complete. Please verify your email or phone to access your dashboard.",
+        title: "Welcome to NeoRishi! 🌟",
+        description: "Your account has been created. Please check your email to verify your account.",
       });
       
-      // Redirect to dashboard
+      // Redirect to dashboard (they'll be redirected to auth if needed)
       navigate('/lunar-dashboard');
       
     } catch (error) {
-      console.error('Error saving onboarding data:', error);
+      console.error('Error during onboarding:', error);
       toast({
         title: "Something went wrong",
         description: "Please try again or contact support if the problem persists.",
