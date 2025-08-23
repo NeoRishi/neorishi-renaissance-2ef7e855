@@ -23,8 +23,10 @@ type SignInFormData = z.infer<typeof signInSchema>;
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const { toast } = useToast();
 
   const signInForm = useForm<SignInFormData>({
@@ -65,6 +67,47 @@ const Auth = () => {
 
   const handleStartJourney = () => {
     navigate('/onboarding');
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address to reset your password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await resetPassword(resetEmail);
+      
+      if (error) {
+        toast({
+          title: "Reset failed",
+          description: error.message || "Unable to send reset email. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Reset email sent!",
+        description: "Check your email for password reset instructions.",
+      });
+      
+      setShowResetPassword(false);
+      setResetEmail('');
+    } catch (error) {
+      toast({
+        title: "Reset failed", 
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -182,6 +225,18 @@ const Auth = () => {
                 </form>
               </Form>
 
+              {/* Forgot Password Link */}
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowResetPassword(true)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Forgot your password?
+                </Button>
+              </div>
+
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -205,6 +260,53 @@ const Auth = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Password Reset Modal */}
+        {showResetPassword && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowResetPassword(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-card border rounded-2xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold text-foreground mb-4">Reset Password</h3>
+              <p className="text-muted-foreground mb-4">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="rounded-xl border-muted/50 focus:border-primary/50"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleResetPassword}
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
+                  >
+                    {isLoading ? 'Sending...' : 'Send Reset Link'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowResetPassword(false)}
+                    className="border-muted/50"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
         
         {/* Footer */}
         <motion.div

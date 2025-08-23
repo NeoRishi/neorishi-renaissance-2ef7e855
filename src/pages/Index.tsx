@@ -115,11 +115,7 @@ const Index = () => {
     setCurrentSection('results');
   };
   const handleTakeAssessment = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    setCurrentSection('assessment');
+    navigate('/onboarding');
   };
   const handleAssessmentComplete = async (result: any) => {
     try {
@@ -311,7 +307,7 @@ const Index = () => {
                       <h3 className="text-2xl font-bold text-primary-foreground mb-4">Ready to Begin?</h3>
                       <p className="text-primary-foreground/90 mb-6">Join thousands discovering their optimal wellness path</p>
                       <Button onClick={handleTakeAssessment} className="bg-background text-foreground hover:bg-secondary px-10 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-                        Start Free Assessment
+                        Start your journey
                         <Zap className="ml-2 w-5 h-5" />
                       </Button>
                     </div>
