@@ -58,6 +58,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				positive: {
+					DEFAULT: 'hsl(var(--positive))',
+					foreground: 'hsl(var(--positive-foreground))'
+				},
+				// Sanatana Dharma semantic colors
+				surya: 'hsl(43 92% 48%)', // --surya-gold
+				chandra: 'hsl(215 20% 76%)', // --chandra-silver  
+				kesari: 'hsl(25 90% 56%)', // --kesari-saffron
+				shyam: 'hsl(229 30% 18%)', // --shyam-indigo
+				tulsi: 'hsl(150 50% 45%)', // --tulsi-green
+				mrid: 'hsl(45 15% 96%)', // --mrid (warm light surface)
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

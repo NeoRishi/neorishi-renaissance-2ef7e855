@@ -7,69 +7,90 @@
 
 @layer base {
   :root {
-    /* Dark premium theme - NeoRishi brand colors */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* RishiRhythm Design Tokens - Sanatana Dharma inspired */
+    --background: 45 15% 96%; /* --mrid (warm light surface) */
+    --foreground: 229 30% 18%; /* --shyam-indigo (primary text) */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 45 15% 96%;
+    --card-foreground: 229 30% 18%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 45 15% 96%;
+    --popover-foreground: 229 30% 18%;
 
-    --primary: 27 96% 61%;
-    --primary-foreground: 240 10% 3.9%;
-    --primary-glow: 27 96% 71%;
+    --primary: 43 92% 48%; /* --surya-gold (accent) */
+    --primary-foreground: 45 15% 96%;
+    --primary-glow: 43 92% 58%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 215 20% 76%; /* --chandra-silver (secondary accent) */
+    --secondary-foreground: 229 30% 18%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 215 20% 76%;
+    --muted-foreground: 229 15% 45%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 25 90% 56%; /* --kesari-saffron (call-to-action) */
+    --accent-foreground: 45 15% 96%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 45 15% 96%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 27 96% 61%;
+    --border: 215 20% 85%;
+    --input: 215 20% 85%;
+    --ring: 43 92% 48%;
 
-    --radius: 0.75rem;
+    --positive: 150 50% 45%; /* --tulsi-green (positive state) */
+    --positive-foreground: 45 15% 96%;
+
+    --radius: 1rem;
 
     /* Sacred geometry gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(240 5.9% 10%));
-    --gradient-card: linear-gradient(145deg, hsl(240 5.9% 10%), hsl(240 3.7% 15.9%));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(45 12% 92%));
+    --gradient-card: linear-gradient(145deg, hsl(45 15% 98%), hsl(45 12% 94%));
+    --gradient-mandala: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.05));
     
     /* Premium shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.2);
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.15);
+    --shadow-lunar: 0 4px 20px -4px hsl(215 20% 60% / 0.3);
     
     /* Smooth transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-lunar: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
   }
 
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 27 96% 61%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 27 96% 61%;
+  .dark {
+    /* Dark theme - indigo & silver with lunar glow */
+    --background: 229 30% 8%;
+    --foreground: 215 20% 92%;
+
+    --card: 229 30% 10%;
+    --card-foreground: 215 20% 92%;
+
+    --popover: 229 30% 10%;
+    --popover-foreground: 215 20% 92%;
+
+    --primary: 43 92% 58%;
+    --primary-foreground: 229 30% 8%;
+
+    --secondary: 215 20% 25%;
+    --secondary-foreground: 215 20% 92%;
+
+    --muted: 215 20% 25%;
+    --muted-foreground: 215 15% 65%;
+
+    --accent: 25 90% 60%;
+    --accent-foreground: 229 30% 8%;
+
+    --positive: 150 50% 50%;
+    --positive-foreground: 229 30% 8%;
+
+    --border: 215 20% 25%;
+    --input: 215 20% 25%;
+    --ring: 43 92% 58%;
+
+    /* Lunar glow variations */
+    --shadow-glow: 0 0 40px hsl(215 20% 60% / 0.3);
+    --gradient-card: linear-gradient(145deg, hsl(229 30% 12%), hsl(229 25% 8%));
   }
 }
 

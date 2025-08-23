@@ -2,32 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Moon, 
-  Sun, 
-  Stars, 
-  Leaf, 
-  Calendar, 
-  Target, 
-  Heart, 
-  TrendingUp,
-  Sparkles,
-  Clock,
-  LogOut
-} from 'lucide-react';
-import { OnboardingResponses, UserDisplayDetails, onboardingQuestions } from '@/data/onboardingQuestions';
-import { supabase } from '@/integrations/supabase/client';
+import { LogOut, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+
+// RishiRhythm Components
+import { TabNavigation, TabsContent } from '@/components/rishi/TabNavigation';
+import { LunarCalendarView } from '@/components/rishi/LunarCalendarView';
+import { DoshaGunaTimeline } from '@/components/rishi/DoshaGunaTimeline';
+import { StreaksCard } from '@/components/rishi/StreaksCard';
+import { JournalingView } from '@/components/rishi/JournalingView';
+import { DailyTasksView } from '@/components/rishi/DailyTasksView';
+import { NeoRishiChat } from '@/components/rishi/NeoRishiChat';
+import { FloatingChatButton } from '@/components/rishi/FloatingChatButton';
+
+// Services & Types
+import { getPanchanga, getStreaks } from '@/services/panchangaService';
+import { PanchangaDay, Streak } from '@/types/panchanga';
 
 const LunarDashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [onboardingData, setOnboardingData] = useState<OnboardingResponses>({});
-  const [userDetails, setUserDetails] = useState<UserDisplayDetails | null>(null);
+  const [panchangaData, setPanchangaData] = useState<PanchangaDay | null>(null);
+  const [streaks, setStreaks] = useState<Streak | null>(null);
+  const [currentDate, setCurrentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -36,35 +38,22 @@ const LunarDashboard = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const loadUserData = async () => {
-      if (user) {
-        try {
-          // Load onboarding responses from Supabase
-          const { data: onboardingResponse } = await supabase
-            .from('onboarding_responses')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-
-          if (onboardingResponse) {
-            setOnboardingData((onboardingResponse.responses as OnboardingResponses) || {});
-            setUserDetails({
-              fullName: onboardingResponse.full_name,
-              phone: onboardingResponse.phone,
-              email: onboardingResponse.email,
-              dateOfBirth: onboardingResponse.date_of_birth ? new Date(onboardingResponse.date_of_birth) : undefined,
-              timeOfBirth: onboardingResponse.time_of_birth,
-              birthPlace: onboardingResponse.birth_place,
-            });
-          }
-        } catch (error) {
-          console.error('Error loading user data:', error);
-        }
+    const loadDashboardData = async () => {
+      try {
+        // Load Panchanga data for current date
+        const panchanga = getPanchanga(currentDate);
+        setPanchangaData(panchanga);
+        
+        // Load streaks data
+        const userStreaks = getStreaks();
+        setStreaks(userStreaks);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
       }
     };
 
-    loadUserData();
-  }, [user]);
+    loadDashboardData();
+  }, [currentDate]);
 
   const handleSignOut = async () => {
     try {
@@ -81,321 +70,103 @@ const LunarDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-slate-900/20 to-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <p className="text-muted-foreground">Loading your spiritual dashboard...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
+  if (!user || !panchangaData || !streaks) {
     return null;
   }
 
-  const getAnswerText = (questionId: number, answerId: string) => {
-    const question = onboardingQuestions.find(q => q.id === questionId);
-    const option = question?.options.find(o => o.id === answerId);
-    return option?.text || answerId;
-  };
-
-  const getPrimaryGoal = () => {
-    const goalAnswer = onboardingData[2]; // Question 2: priority goal
-    return goalAnswer?.[0] ? getAnswerText(2, goalAnswer[0]) : "Personal wellness";
-  };
-
-  const getTopIssues = () => {
-    const issues = onboardingData[1] || []; // Question 1: top issues
-    return issues.slice(0, 3).map(issue => getAnswerText(1, issue));
+  const chatContextData = {
+    date: currentDate,
+    ritu: panchangaData.ritu,
+    tithi: panchangaData.tithi.name,
+    nakshatra: panchangaData.nakshatra.name,
+    moonPhase: panchangaData.moonPhase.name,
+    dosha: panchangaData.doshaGunaBlocks.find(block => {
+      const now = new Date();
+      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      return currentTime >= block.from && currentTime <= block.to;
+    })?.dosha || 'Vāta'
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-slate-900/20 to-background">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(253,186,116,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,146,60,0.08),transparent_50%)]" />
-      
-      <div className="relative z-10 container mx-auto px-6 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 sacred-pattern">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-background/80 backdrop-blur-md border-b sticky top-0 z-30"
+      >
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Welcome{userDetails?.fullName ? `, ${userDetails.fullName.split(' ')[0]}` : ''} 🌙
+              <h1 className="text-2xl md:text-3xl font-bold mb-1">
+                RishiRhythm — Personalised Dashboard
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Your personalized lunar wellness journey begins now
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <Calendar className="w-4 h-4" />
-                  {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </div>
-                <Badge variant="secondary" className="bg-gradient-to-r from-primary/20 to-primary-glow/20 text-primary border-primary/30">
-                  <Moon className="w-3 h-3 mr-1" />
-                  New Moon Phase
-                </Badge>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>{format(new Date(currentDate), 'EEEE, MMMM do, yyyy')}</span>
+                {panchangaData && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                    {panchangaData.moonPhase.emoji} {panchangaData.paksha} • {panchangaData.tithi.name}
+                  </Badge>
+                )}
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleSignOut}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </Button>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Primary Focus */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Primary Goal Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSignOut}
+              className="flex items-center gap-2"
             >
-              <Card className="border-0 shadow-elegant bg-gradient-to-br from-primary/5 to-primary-glow/5 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-primary-glow flex items-center justify-center">
-                      <Target className="w-5 h-5 text-primary-foreground" />
-                    </div>
-                    Your 30-Day Focus
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">
-                    {getPrimaryGoal()}
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <Button className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90">
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      View Personalized Plan
-                    </Button>
-                    <Button variant="outline">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      Track Progress
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Top Issues to Address */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Heart className="w-5 h-5 text-red-500" />
-                    Areas We're Addressing
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {getTopIssues().map((issue, index) => (
-                      <div
-                        key={index}
-                        className="p-4 rounded-xl border border-muted/50 bg-muted/20 hover:bg-muted/30 transition-colors"
-                      >
-                        <p className="text-sm font-medium text-foreground">{issue}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Today's Recommendations */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Sun className="w-5 h-5 text-orange-500" />
-                    Today's Wellness Plan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-muted/50 bg-muted/10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                          <Leaf className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Morning Ritual</p>
-                          <p className="text-sm text-muted-foreground">Meditation + Pranayama</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">15 min</Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-muted/50 bg-muted/10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Mindful Break</p>
-                          <p className="text-sm text-muted-foreground">3 PM Energy Reset</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">5 min</Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-muted/50 bg-muted/10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                          <Moon className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Evening Wind-down</p>
-                          <p className="text-sm text-muted-foreground">Journaling + Herbal tea</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">10 min</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Lunar Calendar */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Stars className="w-5 h-5 text-primary" />
-                    Lunar Guide
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                      <Moon className="w-8 h-8 text-slate-300" />
-                    </div>
-                    <h3 className="font-semibold mb-2">New Moon</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Perfect time for new beginnings and setting intentions
-                    </p>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">
-                      Day 1 of 28
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Personalization Summary */}
-            {userDetails && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-primary" />
-                      Your Profile
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Name</p>
-                        <p className="text-sm">{userDetails.fullName}</p>
-                      </div>
-                      
-                      {userDetails.dateOfBirth && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Birth Date</p>
-                          <p className="text-sm">{new Date(userDetails.dateOfBirth).toLocaleDateString()}</p>
-                        </div>
-                      )}
-                      
-                      {userDetails.birthPlace && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Birth Place</p>
-                          <p className="text-sm">{userDetails.birthPlace}</p>
-                        </div>
-                      )}
-                      
-                      <Button variant="outline" size="sm" className="w-full mt-4">
-                        Complete Astrological Profile
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Card className="border-0 shadow-elegant bg-gradient-to-br from-background/95 to-background backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      View Full Calendar
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <Target className="w-4 h-4 mr-2" />
-                      Update Goals
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Health Tracker
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <Stars className="w-4 h-4 mr-2" />
-                      Astro Insights
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Main Dashboard */}
+      <TabNavigation defaultTab="lunar-calendar">
+        {/* Lunar Calendar Tab */}
+        <TabsContent value="lunar-calendar" className="space-y-6 mt-0">
+          <LunarCalendarView 
+            panchangaData={panchangaData}
+            onDateSelect={setCurrentDate}
+          />
+          
+          <div className="grid lg:grid-cols-2 gap-6">
+            <DoshaGunaTimeline blocks={panchangaData.doshaGunaBlocks} />
+            <StreaksCard streaks={streaks} />
+          </div>
+        </TabsContent>
+
+        {/* Journaling Tab */}
+        <TabsContent value="journaling" className="mt-0">
+          <JournalingView date={currentDate} />
+        </TabsContent>
+
+        {/* Daily Tasks Tab */}
+        <TabsContent value="daily-tasks" className="mt-0">
+          <DailyTasksView date={currentDate} />
+        </TabsContent>
+      </TabNavigation>
+
+      {/* Floating Chat Button */}
+      <FloatingChatButton onClick={() => setIsChatOpen(true)} />
+
+      {/* NeoRishi Chat */}
+      <NeoRishiChat
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        contextData={chatContextData}
+      />
     </div>
   );
 };
