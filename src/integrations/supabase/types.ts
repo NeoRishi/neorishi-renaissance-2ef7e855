@@ -14,196 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
-      assessment_results: {
-        Row: {
-          answers: Json | null
-          constitution_type: string | null
-          created_at: string
-          dominant_dosha: string | null
-          id: string
-          scores: Json | null
-          total_questions: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          answers?: Json | null
-          constitution_type?: string | null
-          created_at?: string
-          dominant_dosha?: string | null
-          id?: string
-          scores?: Json | null
-          total_questions?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          answers?: Json | null
-          constitution_type?: string | null
-          created_at?: string
-          dominant_dosha?: string | null
-          id?: string
-          scores?: Json | null
-          total_questions?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      challenges: {
-        Row: {
-          challenge_id: string
-          created_at: string
-          id: string
-          questionnaire_id: string
-        }
-        Insert: {
-          challenge_id: string
-          created_at?: string
-          id?: string
-          questionnaire_id: string
-        }
-        Update: {
-          challenge_id?: string
-          created_at?: string
-          id?: string
-          questionnaire_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenges_questionnaire_id_fkey"
-            columns: ["questionnaire_id"]
-            isOneToOne: false
-            referencedRelation: "goals_questionnaire"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      food_preferences: {
-        Row: {
-          created_at: string
-          id: string
-          preference_id: string
-          questionnaire_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          preference_id: string
-          questionnaire_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          preference_id?: string
-          questionnaire_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "food_preferences_questionnaire_id_fkey"
-            columns: ["questionnaire_id"]
-            isOneToOne: false
-            referencedRelation: "goals_questionnaire"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      goals: {
-        Row: {
-          created_at: string
-          goal_id: string
-          id: string
-          questionnaire_id: string
-        }
-        Insert: {
-          created_at?: string
-          goal_id: string
-          id?: string
-          questionnaire_id: string
-        }
-        Update: {
-          created_at?: string
-          goal_id?: string
-          id?: string
-          questionnaire_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "goals_questionnaire_id_fkey"
-            columns: ["questionnaire_id"]
-            isOneToOne: false
-            referencedRelation: "goals_questionnaire"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      goals_questionnaire: {
-        Row: {
-          activity_level: string | null
-          assessment_result_id: string | null
-          created_at: string
-          energy_level: number | null
-          id: string
-          sleep_quality: number | null
-          stress_level: number | null
-          time_available: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          activity_level?: string | null
-          assessment_result_id?: string | null
-          created_at?: string
-          energy_level?: number | null
-          id?: string
-          sleep_quality?: number | null
-          stress_level?: number | null
-          time_available?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          activity_level?: string | null
-          assessment_result_id?: string | null
-          created_at?: string
-          energy_level?: number | null
-          id?: string
-          sleep_quality?: number | null
-          stress_level?: number | null
-          time_available?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "goals_questionnaire_assessment_result_id_fkey"
-            columns: ["assessment_result_id"]
-            isOneToOne: false
-            referencedRelation: "assessment_results"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       onboarding_responses: {
         Row: {
-          completed_at: string
+          birth_place: string | null
           created_at: string
+          date_of_birth: string | null
+          email: string | null
+          email_verification_expires_at: string | null
+          email_verification_token: string | null
+          full_name: string | null
           id: string
+          is_email_verified: boolean
+          is_phone_verified: boolean
+          phone: string | null
+          phone_verification_expires_at: string | null
+          phone_verification_token: string | null
           responses: Json
+          time_of_birth: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
-          completed_at?: string
+          birth_place?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          full_name?: string | null
           id?: string
+          is_email_verified?: boolean
+          is_phone_verified?: boolean
+          phone?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verification_token?: string | null
           responses: Json
+          time_of_birth?: string | null
+          updated_at?: string
           user_id: string
         }
         Update: {
-          completed_at?: string
+          birth_place?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          full_name?: string | null
           id?: string
+          is_email_verified?: boolean
+          is_phone_verified?: boolean
+          phone?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verification_token?: string | null
           responses?: Json
+          time_of_birth?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -216,6 +82,8 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_email_verified: boolean
+          is_phone_verified: boolean
           phone: string | null
           time_of_birth: string | null
           updated_at: string
@@ -228,6 +96,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_email_verified?: boolean
+          is_phone_verified?: boolean
           phone?: string | null
           time_of_birth?: string | null
           updated_at?: string
@@ -240,6 +110,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_email_verified?: boolean
+          is_phone_verified?: boolean
           phone?: string | null
           time_of_birth?: string | null
           updated_at?: string
