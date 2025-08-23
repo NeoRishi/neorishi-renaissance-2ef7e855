@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Calendar, BookOpen, Target } from 'lucide-react';
+import { Calendar, BookOpen, Target, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface TabNavigationProps {
@@ -9,7 +9,7 @@ interface TabNavigationProps {
 }
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ 
-  defaultTab = "lunar-calendar", 
+  defaultTab = "today", 
   children 
 }) => {
   return (
@@ -22,7 +22,15 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 bg-muted/30 backdrop-blur-sm">
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-muted/30 backdrop-blur-sm">
+              <TabsTrigger 
+                value="today" 
+                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Clock className="w-4 h-4" />
+                <span className="hidden sm:inline">Today</span>
+                <span className="sm:hidden">Today</span>
+              </TabsTrigger>
               <TabsTrigger 
                 value="lunar-calendar" 
                 className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"

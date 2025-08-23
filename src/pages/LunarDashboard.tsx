@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // RishiRhythm Components
 import { TabNavigation, TabsContent } from '@/components/rishi/TabNavigation';
+import { TodayView } from '@/components/rishi/TodayView';
 import { LunarCalendarView } from '@/components/rishi/LunarCalendarView';
 import { DoshaGunaTimeline } from '@/components/rishi/DoshaGunaTimeline';
 import { StreaksCard } from '@/components/rishi/StreaksCard';
@@ -97,7 +98,7 @@ const LunarDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 sacred-pattern">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 sacred-pattern dark">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -133,18 +134,21 @@ const LunarDashboard = () => {
       </motion.div>
 
       {/* Main Dashboard */}
-      <TabNavigation defaultTab="lunar-calendar">
+      <TabNavigation defaultTab="today">
+        {/* Today Tab */}
+        <TabsContent value="today" className="mt-0">
+          <TodayView panchangaData={panchangaData} />
+          <div className="grid lg:grid-cols-1 gap-6 mt-6">
+            <StreaksCard streaks={streaks} />
+          </div>
+        </TabsContent>
+
         {/* Lunar Calendar Tab */}
         <TabsContent value="lunar-calendar" className="space-y-6 mt-0">
           <LunarCalendarView 
             panchangaData={panchangaData}
             onDateSelect={setCurrentDate}
           />
-          
-          <div className="grid lg:grid-cols-2 gap-6">
-            <DoshaGunaTimeline blocks={panchangaData.doshaGunaBlocks} />
-            <StreaksCard streaks={streaks} />
-          </div>
         </TabsContent>
 
         {/* Journaling Tab */}

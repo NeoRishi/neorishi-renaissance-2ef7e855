@@ -18,7 +18,7 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
   panchangaData, 
   onDateSelect 
 }) => {
-  const [currentView, setCurrentView] = useState<ViewType>('day');
+  const [currentView, setCurrentView] = useState<ViewType>('month');
   const [selectedRitu, setSelectedRitu] = useState<string>('Varṣā');
   const [selectedMonth, setSelectedMonth] = useState<string>('Bhādrapada');
 
@@ -129,8 +129,15 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="grid md:grid-cols-2 gap-6"
+            className="space-y-6"
           >
+            {/* Current Month Header */}
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">{selectedMonth} {selectedRitu}</h2>
+              <p className="text-sm text-muted-foreground">Click any day to schedule tasks or set reminders</p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
             {/* Śukla Paksha */}
             <Card>
               <CardHeader>
@@ -194,6 +201,7 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
                 </div>
               </CardContent>
             </Card>
+            </div>
           </motion.div>
         )}
 
