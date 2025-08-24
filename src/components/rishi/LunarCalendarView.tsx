@@ -15,6 +15,13 @@ interface LunarCalendarViewProps {
   onDateSelect?: (date: string) => void;
 }
 
+// Authentic Tithi names mapping
+const TITHI_NAMES = [
+  'Pratipada', 'Dvitīyā', 'Tṛtīyā', 'Chaturthī', 'Pañchamī',
+  'Ṣaṣṭhī', 'Saptamī', 'Aṣṭamī', 'Navamī', 'Daśamī',
+  'Ekādaśī', 'Dvādaśī', 'Trayodaśī', 'Chaturdaśī', 'Pūrṇimā/Amāvasyā'
+];
+
 // Hindu lunar month mapping with Gregorian approximation
 const HINDU_MONTHS = {
   'Chaitra': { start: [3, 21], end: [4, 20] },      // March 21 - April 20
@@ -83,10 +90,16 @@ const generateHinduMonthDays = (hinduMonth: string, year: number = new Date().ge
       festivals.push({ name: 'Amāvasyā', importance: 'Medium' });
     }
 
+    const tithiName = paksha === 'Śukla' && tithiCounter === 15 ? 'Pūrṇimā' : 
+                      paksha === 'Kṛṣṇa' && tithiCounter === 15 ? 'Amāvasyā' :
+                      TITHI_NAMES[tithiCounter - 1];
+
     days.push({
       gregorianDate: format(currentDate, 'yyyy-MM-dd'),
       gregorianDisplay: format(currentDate, 'd'),
+      gregorianMonthDate: format(currentDate, 'd-MMM'),
       tithi: tithiCounter,
+      tithiName,
       paksha,
       moonPhase,
       moonIllumination,
@@ -278,7 +291,7 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
           </motion.div>
         )}
 
-        {/* Month View - Hindu Month Grid with Rich Day Cards */}
+        {/* Month View - Hindu Month with Separated Paksha */}
         {currentView === 'month' && (
           <motion.div
             key="month"
@@ -295,89 +308,171 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
               </p>
             </div>
             
-            {/* Month Grid */}
-            <div className="grid grid-cols-7 gap-2 md:gap-4">
-              {/* Weekday Headers */}
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-xs font-medium text-muted-foreground p-2">
-                  {day}
+            {(() => {
+              // Separate days by paksha
+              const shuklaDays = hinduMonthDays.filter(day => day.paksha === 'Śukla');
+              const krishnaDays = hinduMonthDays.filter(day => day.paksha === 'Kṛṣṇa');
+              
+              return (
+                <div className="space-y-8">
+                  {/* Shukla Paksha */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-6 h-6 bg-gradient-to-r from-yellow-200 to-yellow-400 rounded-full"></div>
+                      <h3 className="text-lg font-semibold">Śukla Pakṣa (Waxing Moon)</h3>
+                      <span className="text-sm text-muted-foreground">• {shuklaDays.length} days</span>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-3">
+                      {shuklaDays.map((day, index) => (
+                        <motion.div
+                          key={day.gregorianDate}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.05 }}
+                          className={`relative cursor-pointer transition-all duration-200 ${
+                            day.isToday 
+                              ? 'ring-2 ring-primary shadow-lg' 
+                              : 'hover:shadow-md'
+                          }`}
+                          onClick={() => handleDaySelect(day)}
+                        >
+                          <Card className={`h-24 ${
+                            day.isToday 
+                              ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
+                              : 'hover:bg-muted/30'
+                          }`}>
+                            <CardContent className="p-2 h-full flex flex-col justify-between">
+                              {/* Gregorian Date & Moon */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {day.gregorianMonthDate}
+                                </span>
+                                <span className="text-sm">{day.moonPhase}</span>
+                              </div>
+                              
+                              {/* Tithi Name */}
+                              <div className="text-center flex-1 flex items-center justify-center">
+                                <div className="text-xs font-medium">
+                                  {day.tithiName}
+                                </div>
+                              </div>
+                              
+                              {/* Bottom indicators */}
+                              <div className="flex items-center justify-between">
+                                {/* Festival indicator */}
+                                {day.festivals.length > 0 && (
+                                  <Badge variant="secondary" className="text-xs px-1 py-0 h-3">
+                                    {day.festivals.length}
+                                  </Badge>
+                                )}
+                                
+                                {/* Task indicator */}
+                                {day.taskCount > 0 && (
+                                  <div className="flex gap-1">
+                                    {Array.from({ length: Math.min(day.taskCount, 3) }).map((_, i) => (
+                                      <div key={i} className="w-1 h-1 bg-primary rounded-full" />
+                                    ))}
+                                    {day.taskCount > 3 && (
+                                      <span className="text-xs text-primary">+</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Today indicator */}
+                              {day.isToday && (
+                                <div className="absolute -top-1 -right-1">
+                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Krishna Paksha */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-6 h-6 bg-gradient-to-r from-slate-400 to-slate-600 rounded-full"></div>
+                      <h3 className="text-lg font-semibold">Kṛṣṇa Pakṣa (Waning Moon)</h3>
+                      <span className="text-sm text-muted-foreground">• {krishnaDays.length} days</span>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-3">
+                      {krishnaDays.map((day, index) => (
+                        <motion.div
+                          key={day.gregorianDate}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.05 }}
+                          className={`relative cursor-pointer transition-all duration-200 ${
+                            day.isToday 
+                              ? 'ring-2 ring-primary shadow-lg' 
+                              : 'hover:shadow-md'
+                          }`}
+                          onClick={() => handleDaySelect(day)}
+                        >
+                          <Card className={`h-24 ${
+                            day.isToday 
+                              ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
+                              : 'hover:bg-muted/30'
+                          }`}>
+                            <CardContent className="p-2 h-full flex flex-col justify-between">
+                              {/* Gregorian Date & Moon */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {day.gregorianMonthDate}
+                                </span>
+                                <span className="text-sm">{day.moonPhase}</span>
+                              </div>
+                              
+                              {/* Tithi Name */}
+                              <div className="text-center flex-1 flex items-center justify-center">
+                                <div className="text-xs font-medium">
+                                  {day.tithiName}
+                                </div>
+                              </div>
+                              
+                              {/* Bottom indicators */}
+                              <div className="flex items-center justify-between">
+                                {/* Festival indicator */}
+                                {day.festivals.length > 0 && (
+                                  <Badge variant="secondary" className="text-xs px-1 py-0 h-3">
+                                    {day.festivals.length}
+                                  </Badge>
+                                )}
+                                
+                                {/* Task indicator */}
+                                {day.taskCount > 0 && (
+                                  <div className="flex gap-1">
+                                    {Array.from({ length: Math.min(day.taskCount, 3) }).map((_, i) => (
+                                      <div key={i} className="w-1 h-1 bg-primary rounded-full" />
+                                    ))}
+                                    {day.taskCount > 3 && (
+                                      <span className="text-xs text-primary">+</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Today indicator */}
+                              {day.isToday && (
+                                <div className="absolute -top-1 -right-1">
+                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              ))}
-              
-              {/* Empty cells for first week alignment */}
-              {hinduMonthDays.length > 0 && Array.from({ 
-                length: getDay(new Date(hinduMonthDays[0].gregorianDate)) 
-              }).map((_, i) => (
-                <div key={`empty-${i}`} />
-              ))}
-              
-              {/* Day Cards */}
-              {hinduMonthDays.map((day, index) => (
-                <motion.div
-                  key={day.gregorianDate}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.02 }}
-                  whileHover={{ scale: 1.05 }}
-                  className={`relative cursor-pointer transition-all duration-200 ${
-                    day.isToday 
-                      ? 'ring-2 ring-primary shadow-lg' 
-                      : 'hover:shadow-md'
-                  }`}
-                  onClick={() => handleDaySelect(day)}
-                >
-                  <Card className={`h-20 md:h-24 ${
-                    day.isToday 
-                      ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
-                      : 'hover:bg-muted/30'
-                  }`}>
-                    <CardContent className="p-2 h-full flex flex-col justify-between">
-                      {/* Date and Moon Phase */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">{day.gregorianDisplay}</span>
-                        <span className="text-lg">{day.moonPhase}</span>
-                      </div>
-                      
-                      {/* Tithi and Paksha */}
-                      <div className="text-center">
-                        <div className="text-xs text-muted-foreground">
-                          {day.paksha} {day.tithi}
-                        </div>
-                      </div>
-                      
-                      {/* Bottom indicators */}
-                      <div className="flex items-center justify-between">
-                        {/* Festival indicator */}
-                        {day.festivals.length > 0 && (
-                          <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                            {day.festivals.length}
-                          </Badge>
-                        )}
-                        
-                        {/* Task indicator */}
-                        {day.taskCount > 0 && (
-                          <div className="flex gap-1">
-                            {Array.from({ length: Math.min(day.taskCount, 3) }).map((_, i) => (
-                              <div key={i} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                            ))}
-                            {day.taskCount > 3 && (
-                              <span className="text-xs text-primary">+</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Today indicator */}
-                      {day.isToday && (
-                        <div className="absolute -top-1 -right-1">
-                          <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+              );
+            })()}
           </motion.div>
         )}
 
