@@ -58,24 +58,28 @@ const generateHinduMonthDays = (hinduMonth: string, year: number = new Date().ge
   while (currentDate <= endDate) {
     const dayOfYear = Math.floor((currentDate.getTime() - new Date(currentDate.getFullYear(), 0, 0).getTime()) / 86400000);
     
-    // Calculate moon phase based on tithi
+    // Calculate moon phase based on tithi and paksha
     let moonPhase = '🌑';
     let moonIllumination = 0;
     
     if (paksha === 'Śukla') {
+      // Shukla Paksha: Moon waxes from new moon to full moon
       moonIllumination = (tithiCounter / 15) * 100;
-      if (tithiCounter <= 3) moonPhase = '🌒';
-      else if (tithiCounter <= 7) moonPhase = '🌓';
-      else if (tithiCounter <= 11) moonPhase = '🌔';
-      else if (tithiCounter <= 14) moonPhase = '🌕';
-      else moonPhase = '🌕'; // Purnima
+      if (tithiCounter === 1) moonPhase = '🌑'; // New moon (just after Amavasya)
+      else if (tithiCounter <= 3) moonPhase = '🌒'; // Waxing Crescent
+      else if (tithiCounter <= 7) moonPhase = '🌓'; // First Quarter
+      else if (tithiCounter <= 11) moonPhase = '🌔'; // Waxing Gibbous
+      else if (tithiCounter <= 14) moonPhase = '🌔'; // Waxing Gibbous (near full)
+      else moonPhase = '🌕'; // Purnima (Full Moon)
     } else {
+      // Krishna Paksha: Moon wanes from full moon to new moon
       moonIllumination = ((15 - tithiCounter) / 15) * 100;
-      if (tithiCounter <= 3) moonPhase = '🌖';
-      else if (tithiCounter <= 7) moonPhase = '🌗';
-      else if (tithiCounter <= 11) moonPhase = '🌘';
-      else if (tithiCounter <= 14) moonPhase = '🌑';
-      else moonPhase = '🌑'; // Amavasya
+      if (tithiCounter === 1) moonPhase = '🌕'; // Just after full moon
+      else if (tithiCounter <= 3) moonPhase = '🌖'; // Waning Gibbous
+      else if (tithiCounter <= 7) moonPhase = '🌖'; // Waning Gibbous
+      else if (tithiCounter <= 11) moonPhase = '🌗'; // Last Quarter
+      else if (tithiCounter <= 14) moonPhase = '🌘'; // Waning Crescent
+      else moonPhase = '🌑'; // Amavasya (New Moon)
     }
 
     // Sample festivals based on tithi
