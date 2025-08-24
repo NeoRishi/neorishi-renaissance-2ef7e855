@@ -18,6 +18,7 @@ import { JournalingView } from '@/components/rishi/JournalingView';
 import { DailyTasksView } from '@/components/rishi/DailyTasksView';
 import { NeoRishiChat } from '@/components/rishi/NeoRishiChat';
 import { FloatingChatButton } from '@/components/rishi/FloatingChatButton';
+import RituAharaView from '@/components/rishi/RituAharaView';
 
 // Services & Types
 import { getPanchanga, getStreaks } from '@/services/panchangaService';
@@ -159,6 +160,11 @@ const LunarDashboard = () => {
         {/* Daily Tasks Tab */}
         <TabsContent value="daily-tasks" className="mt-0">
           <DailyTasksView date={currentDate} />
+        </TabsContent>
+
+        {/* Ritu-Āhāra Tab */}
+        <TabsContent value="ritu-ahara" className="mt-0">
+          <RituAharaView />
         </TabsContent>
       </TabNavigation>
 

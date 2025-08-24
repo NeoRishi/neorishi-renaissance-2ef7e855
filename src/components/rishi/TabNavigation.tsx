@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Calendar, BookOpen, Target, Clock } from 'lucide-react';
+import { Calendar, BookOpen, Target, Clock, Leaf } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface TabNavigationProps {
@@ -22,7 +22,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-muted/30 backdrop-blur-sm">
+            <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5 bg-muted/30 backdrop-blur-sm">
               <TabsTrigger 
                 value="today" 
                 className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -54,6 +54,14 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
                 <Target className="w-4 h-4" />
                 <span className="hidden sm:inline">Daily Tasks</span>
                 <span className="sm:hidden">Tasks</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ritu-ahara"
+                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Leaf className="w-4 h-4" />
+                <span className="hidden sm:inline">Ritu-Āhāra</span>
+                <span className="sm:hidden">Diet</span>
               </TabsTrigger>
             </TabsList>
           </motion.div>
