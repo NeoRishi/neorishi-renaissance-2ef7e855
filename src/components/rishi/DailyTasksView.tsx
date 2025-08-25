@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { 
   Plus, 
@@ -424,7 +424,7 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
                               {format(new Date(task.when), 'HH:mm')}
                             </div>
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
+                              <CalendarIcon className="w-3 h-3" />
                               {task.durationMin} min
                             </div>
                             <Badge variant="secondary" className="text-xs">
@@ -533,39 +533,35 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
               <div>
                 <label className="text-sm font-medium mb-2 block">Date & Time</label>
                 <div className="space-y-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !newTask.date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newTask.date ? format(new Date(newTask.date), "PPP") : <span>Select date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={newTask.date ? new Date(newTask.date) : undefined}
-                          onSelect={(date) => {
-                            if (date) {
-                              const timeValue = newTask.time || '09:00';
-                              const dateTime = `${format(date, 'yyyy-MM-dd')}T${timeValue}`;
-                              setNewTask(prev => ({ 
-                                ...prev, 
-                                date: format(date, 'yyyy-MM-dd'),
-                                when: dateTime
-                              }));
-                            }
-                          }}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                    </PopoverContent>
-                  </Popover>
+                  <div className="relative">
+                    <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <DatePicker
+                      selected={newTask.date ? new Date(newTask.date) : undefined}
+                      onChange={(date: Date | null) => {
+                        if (date) {
+                          const timeValue = newTask.time || '09:00';
+                          const dateTime = `${format(date, 'yyyy-MM-dd')}T${timeValue}`;
+                          setNewTask(prev => ({ 
+                            ...prev, 
+                            date: format(date, 'yyyy-MM-dd'),
+                            when: dateTime
+                          }));
+                        }
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="Select date"
+                      minDate={new Date()}
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                      className={cn(
+                        "w-full pl-10 pr-3 py-3 rounded-xl border border-muted/50 bg-background text-foreground",
+                        "focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20",
+                        "placeholder:text-muted-foreground transition-colors"
+                      )}
+                      wrapperClassName="w-full"
+                    />
+                  </div>
                   <Input
                     type="time"
                     value={newTask.time || '09:00'}
@@ -579,6 +575,7 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
                         when: dateTime
                       }));
                     }}
+                    className="rounded-xl border-muted/50 focus:border-primary/50"
                   />
                 </div>
               </div>
