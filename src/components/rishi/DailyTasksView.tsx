@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { 
   Plus, 
   Target, 
@@ -15,7 +18,7 @@ import {
   Circle, 
   Lightbulb,
   Trash2,
-  Calendar,
+  Calendar as CalendarIcon,
   Bell,
   Edit3,
   RotateCcw,
@@ -70,6 +73,8 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
   const [newTask, setNewTask] = useState({
     title: '',
     notes: '',
+    date: format(new Date(date), 'yyyy-MM-dd'),
+    time: '08:00',
     when: `${date}T08:00`,
     durationMin: 30,
     category: 'Personal',
@@ -173,6 +178,8 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
     setNewTask({
       title: '',
       notes: '',
+      date: format(new Date(date), 'yyyy-MM-dd'),
+      time: '08:00',
       when: `${date}T08:00`,
       durationMin: 30,
       category: 'Personal',
@@ -524,12 +531,56 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
             
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-2 block">When</label>
-                <Input
-                  type="datetime-local"
-                  value={newTask.when}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, when: e.target.value }))}
-                />
+                <label className="text-sm font-medium mb-2 block">Date & Time</label>
+                <div className="space-y-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !newTask.date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {newTask.date ? format(new Date(newTask.date), "PPP") : <span>Select date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={newTask.date ? new Date(newTask.date) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              const timeValue = newTask.time || '09:00';
+                              const dateTime = `${format(date, 'yyyy-MM-dd')}T${timeValue}`;
+                              setNewTask(prev => ({ 
+                                ...prev, 
+                                date: format(date, 'yyyy-MM-dd'),
+                                when: dateTime
+                              }));
+                            }
+                          }}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                    </PopoverContent>
+                  </Popover>
+                  <Input
+                    type="time"
+                    value={newTask.time || '09:00'}
+                    onChange={(e) => {
+                      const timeValue = e.target.value;
+                      const dateValue = newTask.date || format(new Date(), 'yyyy-MM-dd');
+                      const dateTime = `${dateValue}T${timeValue}`;
+                      setNewTask(prev => ({ 
+                        ...prev, 
+                        time: timeValue,
+                        when: dateTime
+                      }));
+                    }}
+                  />
+                </div>
               </div>
               
               <div>
@@ -595,7 +646,7 @@ export const DailyTasksView: React.FC<DailyTasksViewProps> = ({ date }) => {
               </Button>
               <Button
                 onClick={handleAddTask}
-                disabled={!newTask.title.trim() || !newTask.when}
+                disabled={!newTask.title.trim() || !newTask.date}
                 className="flex-1"
               >
                 Add Task

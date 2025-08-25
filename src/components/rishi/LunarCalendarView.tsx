@@ -22,20 +22,30 @@ const TITHI_NAMES = [
   'Ekādaśī', 'Dvādaśī', 'Trayodaśī', 'Chaturdaśī', 'Pūrṇimā/Amāvasyā'
 ];
 
-// Hindu lunar month mapping with Gregorian approximation
+// Hindu lunar month mapping with Gregorian approximation for 2025
 const HINDU_MONTHS = {
-  'Chaitra': { start: [3, 21], end: [4, 20] },      // March 21 - April 20
-  'Vaishākha': { start: [4, 21], end: [5, 20] },    // April 21 - May 20
-  'Jyeṣṭha': { start: [5, 21], end: [6, 20] },      // May 21 - June 20
-  'Āṣāḍha': { start: [6, 21], end: [7, 20] },       // June 21 - July 20
-  'Śrāvaṇa': { start: [7, 21], end: [8, 20] },      // July 21 - August 20
-  'Bhādrapada': { start: [8, 21], end: [9, 20] },   // August 21 - September 20
-  'Āśvina': { start: [9, 21], end: [10, 20] },      // September 21 - October 20
-  'Kārtika': { start: [10, 21], end: [11, 20] },    // October 21 - November 20
-  'Agrahāyaṇa': { start: [11, 21], end: [12, 20] }, // November 21 - December 20
-  'Pauṣa': { start: [12, 21], end: [1, 20] },       // December 21 - January 20
-  'Māgha': { start: [1, 21], end: [2, 18] },        // January 21 - February 18
-  'Phālguna': { start: [2, 19], end: [3, 20] }      // February 19 - March 20
+  'Chaitra': { start: [3, 21], end: [4, 20], gregorianRange: '21-Mar to 20-Apr' },
+  'Vaishākha': { start: [4, 21], end: [5, 20], gregorianRange: '21-Apr to 20-May' },
+  'Jyeṣṭha': { start: [5, 21], end: [6, 20], gregorianRange: '21-May to 20-Jun' },
+  'Āṣāḍha': { start: [6, 21], end: [7, 20], gregorianRange: '21-Jun to 20-Jul' },
+  'Śrāvaṇa': { start: [7, 21], end: [8, 20], gregorianRange: '21-Jul to 20-Aug' },
+  'Bhādrapada': { start: [8, 21], end: [9, 20], gregorianRange: '21-Aug to 20-Sep' },
+  'Āśvina': { start: [9, 21], end: [10, 20], gregorianRange: '21-Sep to 20-Oct' },
+  'Kārtika': { start: [10, 21], end: [11, 20], gregorianRange: '21-Oct to 20-Nov' },
+  'Agrahāyaṇa': { start: [11, 21], end: [12, 20], gregorianRange: '21-Nov to 20-Dec' },
+  'Pauṣa': { start: [12, 21], end: [1, 20], gregorianRange: '21-Dec to 20-Jan' },
+  'Māgha': { start: [1, 21], end: [2, 18], gregorianRange: '21-Jan to 18-Feb' },
+  'Phālguna': { start: [2, 19], end: [3, 20], gregorianRange: '19-Feb to 20-Mar' }
+};
+
+// Ritu to Gregorian date mapping for 2025
+const RITU_GREGORIAN_RANGES = {
+  'Vasanta': '21-Mar to 20-May',   // Chaitra + Vaishākha
+  'Grīṣma': '21-May to 20-Jul',    // Jyeṣṭha + Āṣāḍha  
+  'Varṣā': '21-Jul to 20-Sep',     // Śrāvaṇa + Bhādrapada
+  'Śarad': '21-Sep to 20-Nov',     // Āśvina + Kārtika
+  'Hemanta': '21-Nov to 20-Jan',   // Agrahāyaṇa + Pauṣa
+  'Śiśira': '21-Jan to 20-Mar'     // Māgha + Phālguna
 };
 
   // Generate accurate Bhadrapada 2024 calendar days with real tithi timings
@@ -235,6 +245,9 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
                         </Badge>
                       )}
                     </div>
+                    <div className="text-xs text-muted-foreground font-medium">
+                      {RITU_GREGORIAN_RANGES[ritu.name]}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground mb-3">{ritu.description}</p>
@@ -263,7 +276,10 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
           >
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-2">{selectedRitu} Ritu</h2>
-              <p className="text-sm text-muted-foreground">Select a lunar month</p>
+              <div className="text-sm text-muted-foreground">
+                <p>{RITU_GREGORIAN_RANGES[selectedRitu]}</p>
+                <p>Select a lunar month</p>
+              </div>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
@@ -280,10 +296,13 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
                   >
                     <CardHeader>
                       <CardTitle className="text-lg">{month}</CardTitle>
+                      <div className="text-sm text-muted-foreground font-medium">
+                        {HINDU_MONTHS[month]?.gregorianRange}
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground">
-                        Hindu lunar month spanning Gregorian dates
+                        Hindu lunar month spanning Gregorian calendar
                       </p>
                     </CardContent>
                   </Card>
@@ -305,9 +324,10 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
             {/* Month Header */}
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-2">{selectedMonth}</h2>
-              <p className="text-sm text-muted-foreground">
-                Hindu lunar month • {hinduMonthDays.length} days • Click any day to schedule tasks
-              </p>
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium">{HINDU_MONTHS[selectedMonth]?.gregorianRange}</p>
+                <p>Hindu lunar month • {hinduMonthDays.length} days • Click any day to schedule tasks</p>
+              </div>
             </div>
             
             {(() => {
@@ -324,55 +344,93 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
                       <h3 className="text-lg font-semibold">Śukla Pakṣa (Waxing Moon)</h3>
                       <span className="text-sm text-muted-foreground">• {shuklaDays.length} days</span>
                     </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-3">
-                      {shuklaDays.map((day, index) => (
-                        <motion.div
-                          key={day.gregorianDate}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.05 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={`relative cursor-pointer transition-all duration-200 ${
-                            day.isToday 
-                              ? 'ring-2 ring-primary shadow-lg' 
-                              : 'hover:shadow-md'
-                          }`}
-                          onClick={() => handleDaySelect(day)}
-                        >
-                          <Card className={`h-24 ${
-                            day.isToday 
-                              ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
-                              : 'hover:bg-muted/30'
-                          }`}>
-                            <CardContent className="p-2 h-full flex flex-col justify-between">
-                              {/* Gregorian Date & Moon */}
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {day.gregorianMonthDate}
-                                </span>
-                                <span className="text-sm">{day.moonPhase}</span>
-                              </div>
-                              
-                              {/* Tithi Name & Time */}
-                              <div className="text-center flex-1 flex flex-col items-center justify-center">
-                                <div className="text-xs font-medium">
-                                  {day.tithiName}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  {day.tithiTime}
-                                </div>
-                              </div>
-                              
-                              {/* Today indicator */}
-                              {day.isToday && (
-                                <div className="absolute -top-1 -right-1">
-                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                    {/* Week Days Header */}
+                    <div className="grid grid-cols-7 gap-2 mb-2 text-xs font-medium text-muted-foreground text-center">
+                      <div>Mon</div>
+                      <div>Tue</div>
+                      <div>Wed</div>
+                      <div>Thu</div>
+                      <div>Fri</div>
+                      <div>Sat</div>
+                      <div>Sun</div>
+                    </div>
+                    {/* Arrange days according to actual weekdays starting with Monday */}
+                    <div className="grid grid-cols-7 gap-2">
+                      {(() => {
+                        // Create a 7-column grid respecting actual weekdays
+                        const gridItems = [];
+                        
+                        shuklaDays.forEach((day, index) => {
+                          const date = new Date(day.gregorianDate);
+                          // getDay() returns 0 for Sunday, 1 for Monday, etc.
+                          // We want Monday (1) to be position 0, so we adjust
+                          let dayOfWeek = date.getDay();
+                          dayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday=0 to Sunday=6, Monday=1 to Monday=0
+                          
+                          // Calculate which week row this day belongs to
+                          const weekRow = Math.floor(index / 7);
+                          const gridPosition = weekRow * 7 + dayOfWeek;
+                          
+                          gridItems[gridPosition] = (
+                            <motion.div
+                              key={day.gregorianDate}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.05 }}
+                              whileHover={{ scale: 1.05 }}
+                              className={`relative cursor-pointer transition-all duration-200 ${
+                                day.isToday 
+                                  ? 'ring-2 ring-primary shadow-lg' 
+                                  : 'hover:shadow-md'
+                              }`}
+                              onClick={() => handleDaySelect(day)}
+                            >
+                              <Card className={`h-24 ${
+                                day.isToday 
+                                  ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
+                                  : 'hover:bg-muted/30'
+                              }`}>
+                                <CardContent className="p-2 h-full flex flex-col justify-between">
+                                  {/* Gregorian Date & Moon */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {day.gregorianMonthDate}
+                                    </span>
+                                    <span className="text-sm">{day.moonPhase}</span>
+                                  </div>
+                                  
+                                  {/* Tithi Name & Time */}
+                                  <div className="text-center flex-1 flex flex-col items-center justify-center">
+                                    <div className="text-xs font-medium">
+                                      {day.tithiName}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      {day.tithiTime}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Today indicator */}
+                                  {day.isToday && (
+                                    <div className="absolute -top-1 -right-1">
+                                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          );
+                        });
+                        
+                        // Fill empty slots with empty divs
+                        const totalSlots = Math.ceil(shuklaDays.length / 7) * 7;
+                        for (let i = 0; i < totalSlots; i++) {
+                          if (!gridItems[i]) {
+                            gridItems[i] = <div key={`empty-${i}`}></div>;
+                          }
+                        }
+                        
+                        return gridItems;
+                      })()}
                     </div>
                   </div>
 
@@ -383,55 +441,94 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
                       <h3 className="text-lg font-semibold">Kṛṣṇa Pakṣa (Waning Moon)</h3>
                       <span className="text-sm text-muted-foreground">• {krishnaDays.length} days</span>
                     </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-3">
-                      {krishnaDays.map((day, index) => (
-                        <motion.div
-                          key={day.gregorianDate}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.05 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={`relative cursor-pointer transition-all duration-200 ${
-                            day.isToday 
-                              ? 'ring-2 ring-primary shadow-lg' 
-                              : 'hover:shadow-md'
-                          }`}
-                          onClick={() => handleDaySelect(day)}
-                        >
-                          <Card className={`h-24 ${
-                            day.isToday 
-                              ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
-                              : 'hover:bg-muted/30'
-                          }`}>
-                            <CardContent className="p-2 h-full flex flex-col justify-between">
-                              {/* Gregorian Date & Moon */}
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {day.gregorianMonthDate}
-                                </span>
-                                <span className="text-sm">{day.moonPhase}</span>
-                              </div>
-                              
-                              {/* Tithi Name & Time */}
-                              <div className="text-center flex-1 flex flex-col items-center justify-center">
-                                <div className="text-xs font-medium">
-                                  {day.tithiName}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  {day.tithiTime}
-                                </div>
-                              </div>
-                              
-                              {/* Today indicator */}
-                              {day.isToday && (
-                                <div className="absolute -top-1 -right-1">
-                                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                    {/* Week Days Header */}
+                    <div className="grid grid-cols-7 gap-2 mb-2 text-xs font-medium text-muted-foreground text-center">
+                      <div>Mon</div>
+                      <div>Tue</div>
+                      <div>Wed</div>
+                      <div>Thu</div>
+                      <div>Fri</div>
+                      <div>Sat</div>
+                      <div>Sun</div>
+                    </div>
+                    {/* Arrange days according to actual weekdays starting with Monday */}
+                    <div className="grid grid-cols-7 gap-2">
+                      {(() => {
+                        // Create a 7-column grid respecting actual weekdays
+                        const gridItems = [];
+                        
+                        krishnaDays.forEach((day, index) => {
+                          const date = new Date(day.gregorianDate);
+                          // getDay() returns 0 for Sunday, 1 for Monday, etc.
+                          // We want Monday (1) to be position 0, so we adjust
+                          let dayOfWeek = date.getDay();
+                          dayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday=0 to Sunday=6, Monday=1 to Monday=0
+                          
+                          // Calculate which week row this day belongs to based on continuing from Shukla Paksha
+                          const totalDaysBeforeKrishna = shuklaDays.length;
+                          const weekRow = Math.floor((totalDaysBeforeKrishna + index) / 7);
+                          const gridPosition = weekRow * 7 + dayOfWeek;
+                          
+                          gridItems[gridPosition] = (
+                            <motion.div
+                              key={day.gregorianDate}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.05 }}
+                              whileHover={{ scale: 1.05 }}
+                              className={`relative cursor-pointer transition-all duration-200 ${
+                                day.isToday 
+                                  ? 'ring-2 ring-primary shadow-lg' 
+                                  : 'hover:shadow-md'
+                              }`}
+                              onClick={() => handleDaySelect(day)}
+                            >
+                              <Card className={`h-24 ${
+                                day.isToday 
+                                  ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30' 
+                                  : 'hover:bg-muted/30'
+                              }`}>
+                                <CardContent className="p-2 h-full flex flex-col justify-between">
+                                  {/* Gregorian Date & Moon */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {day.gregorianMonthDate}
+                                    </span>
+                                    <span className="text-sm">{day.moonPhase}</span>
+                                  </div>
+                                  
+                                  {/* Tithi Name & Time */}
+                                  <div className="text-center flex-1 flex flex-col items-center justify-center">
+                                    <div className="text-xs font-medium">
+                                      {day.tithiName}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      {day.tithiTime}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Today indicator */}
+                                  {day.isToday && (
+                                    <div className="absolute -top-1 -right-1">
+                                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          );
+                        });
+                        
+                        // Fill empty slots with empty divs
+                        const totalSlots = Math.ceil(krishnaDays.length / 7) * 7;
+                        for (let i = 0; i < totalSlots; i++) {
+                          if (!gridItems[i]) {
+                            gridItems[i] = <div key={`empty-krishna-${i}`}></div>;
+                          }
+                        }
+                        
+                        return gridItems;
+                      })()}
                     </div>
                   </div>
                 </div>
