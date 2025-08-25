@@ -14,6 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_results: {
+        Row: {
+          answers: Json
+          constitution_type: string
+          created_at: string
+          dominant_dosha: string
+          id: string
+          scores: Json
+          total_questions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          constitution_type: string
+          created_at?: string
+          dominant_dosha: string
+          id?: string
+          scores: Json
+          total_questions: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          constitution_type?: string
+          created_at?: string
+          dominant_dosha?: string
+          id?: string
+          scores?: Json
+          total_questions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      challenges: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          questionnaire_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          questionnaire_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          questionnaire_id?: string
+        }
+        Relationships: []
+      }
+      daily_tasks: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          task_date: string
+          task_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          task_date: string
+          task_type: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          task_date?: string
+          task_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      food_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          preference_id: string
+          questionnaire_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preference_id: string
+          questionnaire_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preference_id?: string
+          questionnaire_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          questionnaire_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          questionnaire_id: string
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          questionnaire_id?: string
+        }
+        Relationships: []
+      }
+      goals_questionnaire: {
+        Row: {
+          activity_level: string
+          assessment_result_id: string
+          created_at: string
+          energy_level: number
+          id: string
+          sleep_quality: number
+          stress_level: number
+          time_available: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_level: string
+          assessment_result_id: string
+          created_at?: string
+          energy_level: number
+          id?: string
+          sleep_quality: number
+          stress_level: number
+          time_available: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_level?: string
+          assessment_result_id?: string
+          created_at?: string
+          energy_level?: number
+          id?: string
+          sleep_quality?: number
+          stress_level?: number
+          time_available?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          improvements: string | null
+          reflection: string | null
+          sankalpa: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date: string
+          id?: string
+          improvements?: string | null
+          reflection?: string | null
+          sankalpa?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          improvements?: string | null
+          reflection?: string | null
+          sankalpa?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_responses: {
         Row: {
           birth_place: string | null
@@ -74,6 +284,30 @@ export type Database = {
         }
         Relationships: []
       }
+      panchanga_cache: {
+        Row: {
+          cache_date: string
+          created_at: string
+          id: string
+          panchanga_data: Json
+          updated_at: string
+        }
+        Insert: {
+          cache_date: string
+          created_at?: string
+          id?: string
+          panchanga_data: Json
+          updated_at?: string
+        }
+        Update: {
+          cache_date?: string
+          created_at?: string
+          id?: string
+          panchanga_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birth_place: string | null
@@ -114,6 +348,39 @@ export type Database = {
           is_phone_verified?: boolean
           phone?: string | null
           time_of_birth?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streaks: {
+        Row: {
+          created_at: string
+          current_count: number
+          id: string
+          last_activity_date: string | null
+          longest_count: number
+          streak_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_count?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_count?: number
+          streak_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_count?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_count?: number
+          streak_type?: string
           updated_at?: string
           user_id?: string
         }
