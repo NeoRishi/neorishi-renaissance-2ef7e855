@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, Sunrise, Sunset, Moon, Sun, Calendar, Plus, MapPin } from 'lucide-react';
-import { RITUS } from '@/types/panchanga';
-import { format, parseISO, addDays, startOfDay, getDay } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Sunrise, Sunset, Moon, Sun, Calendar, Plus, MapPin, Clock, Bell, Target, CalendarIcon, Zap, BookOpen } from 'lucide-react';
+import { RITUS, Task } from '@/types/panchanga';
+import { format, parseISO, addDays, startOfDay, getDay, addMinutes } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 type ViewType = 'year' | 'ritu' | 'month' | 'paksha' | 'day';
 
@@ -14,6 +22,39 @@ interface LunarCalendarViewProps {
   panchangaData: any;
   onDateSelect?: (date: string) => void;
 }
+
+const TASK_CATEGORIES = ['Spiritual', 'Health', 'Work', 'Personal', 'Learning', 'Creative'];
+const RECURRENCE_OPTIONS = ['None', 'Daily', 'Weekly', 'Monthly', 'Lunar Month', 'Paksha', 'Specific Tithi'];
+
+// Enhanced Hindu calendar context for tasks
+const HINDU_TASK_CONTEXTS = {
+  'Ekādaśī': {
+    recommended: ['Fasting', 'Meditation', 'Prayer', 'Reading sacred texts'],
+    avoid: ['Heavy meals', 'Non-spiritual activities']
+  },
+  'Pūrṇimā': {
+    recommended: ['Group meditation', 'Charity', 'Full moon rituals', 'Gratitude practice'],
+    avoid: ['Starting new ventures', 'Arguments']
+  },
+  'Amāvasyā': {
+    recommended: ['Ancestor worship', 'Inner reflection', 'Planning', 'Cleansing rituals'],
+    avoid: ['Travel', 'Important decisions']
+  },
+  'Chaturthi': {
+    recommended: ['Gaṇeśa worship', 'New beginnings', 'Problem-solving'],
+    avoid: ['Negative thoughts', 'Harsh words']
+  }
+};
+
+// Task persistence helpers
+const getTasksFromStorage = (date: string): Task[] => {
+  const stored = localStorage.getItem(`rishi-tasks-${date}`);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const saveTasksToStorage = (date: string, tasks: Task[]): void => {
+  localStorage.setItem(`rishi-tasks-${date}`, JSON.stringify(tasks));
+};
 
 // Authentic Tithi names mapping
 const TITHI_NAMES = [
@@ -137,11 +178,31 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
   panchangaData, 
   onDateSelect 
 }) => {
+  const { toast } = useToast();
   const [currentView, setCurrentView] = useState<ViewType>('month');
   const [selectedRitu, setSelectedRitu] = useState<string>('Varṣā');
   const [selectedMonth, setSelectedMonth] = useState<string>('Bhādrapada');
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [showReminderForm, setShowReminderForm] = useState(false);
+  const [dayTasks, setDayTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    notes: '',
+    date: '',
+    time: '08:00',
+    when: '',
+    durationMin: 30,
+    category: 'Spiritual',
+    recurrence: 'None'
+  });
+  const [reminder, setReminder] = useState({
+    type: 'task',
+    time: '06:00',
+    message: '',
+    recurrence: 'Daily'
+  });
 
   const handleRituSelect = (ritu: string) => {
     setSelectedRitu(ritu);
@@ -156,9 +217,102 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
   const handleDaySelect = (day: any) => {
     setSelectedDay(day);
     setTaskDialogOpen(true);
+    setShowAddTaskForm(false);
+    setShowReminderForm(false);
+    
+    // Load tasks for selected day
+    const tasks = getTasksFromStorage(day.gregorianDate);
+    setDayTasks(tasks);
+    
+    // Initialize new task form with selected date
+    const formattedDate = format(new Date(day.gregorianDate), 'yyyy-MM-dd');
+    setNewTask(prev => ({
+      ...prev,
+      date: formattedDate,
+      when: `${formattedDate}T08:00`
+    }));
+    
     if (onDateSelect) {
       onDateSelect(day.gregorianDate);
     }
+  };
+
+  const handleAddTask = () => {
+    if (!newTask.title.trim() || !newTask.when) return;
+
+    const task: Task = {
+      id: `task_${Date.now()}`,
+      title: newTask.title,
+      notes: newTask.notes,
+      when: newTask.when + '+05:30',
+      durationMin: newTask.durationMin,
+      status: 'pending',
+      category: newTask.category,
+      reminder: format(
+        addMinutes(new Date(newTask.when), -10),
+        "yyyy-MM-dd'T'HH:mm"
+      ) + '+05:30'
+    };
+
+    const updatedTasks = [...dayTasks, task];
+    setDayTasks(updatedTasks);
+    saveTasksToStorage(selectedDay.gregorianDate, updatedTasks);
+    
+    // Reset form
+    setNewTask({
+      title: '',
+      notes: '',
+      date: newTask.date,
+      time: '08:00',
+      when: `${newTask.date}T08:00`,
+      durationMin: 30,
+      category: 'Spiritual',
+      recurrence: 'None'
+    });
+    
+    setShowAddTaskForm(false);
+
+    toast({
+      title: "Task added",
+      description: `Task scheduled for ${selectedDay.tithiName} (${format(new Date(selectedDay.gregorianDate), 'MMM do')})`,
+    });
+  };
+
+  const handleSetReminder = () => {
+    if (!reminder.message.trim()) return;
+    
+    // Save reminder to localStorage
+    const reminders = JSON.parse(localStorage.getItem('rishi-reminders') || '[]');
+    const newReminder = {
+      id: `reminder_${Date.now()}`,
+      date: selectedDay.gregorianDate,
+      time: reminder.time,
+      message: reminder.message,
+      type: reminder.type,
+      recurrence: reminder.recurrence,
+      hinduContext: {
+        tithi: selectedDay.tithiName,
+        paksha: selectedDay.paksha,
+        moonPhase: selectedDay.moonPhase
+      }
+    };
+    
+    reminders.push(newReminder);
+    localStorage.setItem('rishi-reminders', JSON.stringify(reminders));
+    
+    setReminder({
+      type: 'task',
+      time: '06:00',
+      message: '',
+      recurrence: 'Daily'
+    });
+    
+    setShowReminderForm(false);
+    
+    toast({
+      title: "Reminder set",
+      description: `Daily reminder set for ${selectedDay.tithiName}`,
+    });
   };
 
   const handleBackToYear = () => setCurrentView('year');
@@ -630,70 +784,399 @@ export const LunarCalendarView: React.FC<LunarCalendarViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Day Task Scheduling Dialog */}
+      {/* Enhanced Day Task Scheduling Dialog */}
       <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Schedule Task
+              {selectedDay?.tithiName} - {selectedDay && format(new Date(selectedDay.gregorianDate), 'MMM do, yyyy')}
             </DialogTitle>
           </DialogHeader>
           {selectedDay && (
-            <div className="space-y-4">
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <div className="font-medium">
-                      {format(new Date(selectedDay.gregorianDate), 'EEEE, MMMM do, yyyy')}
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="add-task">Add Task</TabsTrigger>
+                <TabsTrigger value="reminder">Reminder</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="font-medium">
+                        {format(new Date(selectedDay.gregorianDate), 'EEEE, MMMM do, yyyy')}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {selectedDay.paksha} Paksha • {selectedDay.tithiName} • {selectedDay.tithiTime}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {selectedDay.paksha} Paksha • Tithi {selectedDay.tithi}
-                    </div>
+                    <div className="text-3xl">{selectedDay.moonPhase}</div>
                   </div>
-                  <div className="text-2xl">{selectedDay.moonPhase}</div>
+                  
+                  {selectedDay.festivals.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium">Festivals & Observances:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedDay.festivals.map((festival: any, index: number) => (
+                          <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
+                            {festival}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hindu Calendar Recommendations */}
+                  {HINDU_TASK_CONTEXTS[selectedDay.tithiName] && (
+                    <div className="mt-4 space-y-2">
+                      <div className="text-sm font-medium text-tulsi">Recommended for {selectedDay.tithiName}:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {HINDU_TASK_CONTEXTS[selectedDay.tithiName].recommended.map((activity: string, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs bg-tulsi/10 border-tulsi/30 text-tulsi">
+                            {activity}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="text-sm font-medium text-destructive">Avoid:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {HINDU_TASK_CONTEXTS[selectedDay.tithiName].avoid.map((activity: string, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs bg-destructive/10 border-destructive/30 text-destructive">
+                            {activity}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {selectedDay.festivals.length > 0 && (
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium">Festivals:</div>
-                    {selectedDay.festivals.map((festival: any, index: number) => (
-                      <Badge key={index} variant="outline" className="mr-2">
-                        {festival.name}
-                      </Badge>
+
+                {/* Existing Tasks */}
+                {dayTasks.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium">Scheduled Tasks ({dayTasks.length}):</div>
+                    {dayTasks.map((task, index) => (
+                      <div key={task.id} className="p-3 border rounded-lg bg-muted/20">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium">{task.title}</div>
+                            {task.notes && <div className="text-sm text-muted-foreground">{task.notes}</div>}
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(new Date(task.when), 'HH:mm')}
+                              </div>
+                              <div>{task.durationMin} min</div>
+                              <Badge variant="secondary" className="text-xs">{task.category}</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
-              </div>
 
-              <div className="space-y-3">
-                <Button className="w-full flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Task for This Day
-                </Button>
-                
-                <Button variant="outline" className="w-full flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Set Daily Reminder
-                </Button>
-                
-                <Button variant="outline" className="w-full flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  View Day Details
-                </Button>
-              </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setShowAddTaskForm(true)} 
+                    className="flex-1 flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Task
+                  </Button>
+                  <Button 
+                    onClick={() => setShowReminderForm(true)} 
+                    variant="outline" 
+                    className="flex-1 flex items-center gap-2"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Set Reminder
+                  </Button>
+                </div>
+              </TabsContent>
 
-              {selectedDay.taskCount > 0 && (
-                <div className="border-t pt-3">
-                  <div className="text-sm font-medium mb-2">
-                    Existing Tasks: {selectedDay.taskCount}
+              <TabsContent value="add-task" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Task Title</label>
+                    <Input
+                      placeholder={`Task for ${selectedDay.tithiName}...`}
+                      value={newTask.title}
+                      onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                      className="rounded-xl border-muted/50 focus:border-primary/50"
+                    />
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Click "Add Task" to schedule something new for this day
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Notes</label>
+                    <Textarea
+                      placeholder="Add context or instructions..."
+                      value={newTask.notes}
+                      onChange={(e) => setNewTask(prev => ({ ...prev, notes: e.target.value }))}
+                      rows={3}
+                      className="rounded-xl border-muted/50 focus:border-primary/50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Date & Time</label>
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <DatePicker
+                            selected={newTask.date ? new Date(newTask.date) : new Date(selectedDay.gregorianDate)}
+                            onChange={(date: Date | null) => {
+                              if (date) {
+                                const formattedDate = format(date, 'yyyy-MM-dd');
+                                const dateTime = `${formattedDate}T${newTask.time}`;
+                                setNewTask(prev => ({ 
+                                  ...prev, 
+                                  date: formattedDate,
+                                  when: dateTime
+                                }));
+                              }
+                            }}
+                            dateFormat="dd/MM/yyyy"
+                            minDate={new Date()}
+                            className={cn(
+                              "w-full pl-10 pr-3 py-3 rounded-xl border border-muted/50 bg-background text-foreground",
+                              "focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                            )}
+                          />
+                        </div>
+                        <Input
+                          type="time"
+                          value={newTask.time}
+                          onChange={(e) => {
+                            const timeValue = e.target.value;
+                            const dateValue = newTask.date || format(new Date(selectedDay.gregorianDate), 'yyyy-MM-dd');
+                            const dateTime = `${dateValue}T${timeValue}`;
+                            setNewTask(prev => ({ 
+                              ...prev, 
+                              time: timeValue,
+                              when: dateTime
+                            }));
+                          }}
+                          className="rounded-xl border-muted/50 focus:border-primary/50"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Duration (min)</label>
+                      <Input
+                        type="number"
+                        value={newTask.durationMin}
+                        onChange={(e) => setNewTask(prev => ({ 
+                          ...prev, 
+                          durationMin: parseInt(e.target.value) || 30 
+                        }))}
+                        min="5"
+                        max="480"
+                        className="rounded-xl border-muted/50 focus:border-primary/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Category</label>
+                      <Select value={newTask.category} onValueChange={(value) => 
+                        setNewTask(prev => ({ ...prev, category: value }))
+                      }>
+                        <SelectTrigger className="rounded-xl border-muted/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TASK_CATEGORIES.map(category => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Recurrence</label>
+                      <Select value={newTask.recurrence} onValueChange={(value) => 
+                        setNewTask(prev => ({ ...prev, recurrence: value }))
+                      }>
+                        <SelectTrigger className="rounded-xl border-muted/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RECURRENCE_OPTIONS.map(option => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddTaskForm(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAddTask}
+                      disabled={!newTask.title.trim() || !newTask.when}
+                      className="flex-1"
+                    >
+                      Add Task
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
+              </TabsContent>
+
+              <TabsContent value="reminder" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Reminder Message</label>
+                    <Textarea
+                      placeholder={`Remember to honor ${selectedDay.tithiName}...`}
+                      value={reminder.message}
+                      onChange={(e) => setReminder(prev => ({ ...prev, message: e.target.value }))}
+                      rows={3}
+                      className="rounded-xl border-muted/50 focus:border-primary/50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Reminder Time</label>
+                      <Input
+                        type="time"
+                        value={reminder.time}
+                        onChange={(e) => setReminder(prev => ({ ...prev, time: e.target.value }))}
+                        className="rounded-xl border-muted/50 focus:border-primary/50"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Repeat</label>
+                      <Select value={reminder.recurrence} onValueChange={(value) => 
+                        setReminder(prev => ({ ...prev, recurrence: value }))
+                      }>
+                        <SelectTrigger className="rounded-xl border-muted/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Daily">Daily</SelectItem>
+                          <SelectItem value="Weekly">Weekly</SelectItem>
+                          <SelectItem value="Monthly">Monthly</SelectItem>
+                          <SelectItem value="On this Tithi">On this Tithi</SelectItem>
+                          <SelectItem value="Same Paksha">Same Paksha</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted/30 p-3 rounded-lg">
+                    <div className="text-sm font-medium mb-1">Hindu Calendar Context:</div>
+                    <div className="text-xs text-muted-foreground">
+                      This reminder will be associated with {selectedDay.tithiName} in {selectedDay.paksha} Paksha
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowReminderForm(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSetReminder}
+                      disabled={!reminder.message.trim()}
+                      className="flex-1"
+                    >
+                      Set Reminder
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="details" className="space-y-4">
+                <div className="space-y-4">
+                  {/* Detailed Panchanga Info */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="w-5 h-5" />
+                        Complete Panchanga Details
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="font-medium text-muted-foreground">Tithi</div>
+                          <div>{selectedDay.tithiName} ({selectedDay.tithi}/15)</div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-muted-foreground">Paksha</div>
+                          <div>{selectedDay.paksha}</div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-muted-foreground">Moon Phase</div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{selectedDay.moonPhase}</span>
+                            <span>{Math.round(selectedDay.moonIllumination)}% illuminated</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-muted-foreground">Tithi Timing</div>
+                          <div>{selectedDay.tithiTime}</div>
+                        </div>
+                      </div>
+
+                      {panchangaData && (
+                        <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t">
+                          <div className="flex items-center gap-2">
+                            <Sunrise className="w-4 h-4 text-orange-500" />
+                            <div>
+                              <div className="font-medium text-muted-foreground">Sunrise</div>
+                              <div>{format(parseISO(panchangaData.sunrise), 'HH:mm')}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Sunset className="w-4 h-4 text-orange-600" />
+                            <div>
+                              <div className="font-medium text-muted-foreground">Sunset</div>
+                              <div>{format(parseISO(panchangaData.sunset), 'HH:mm')}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Astrological Guidance */}
+                  {panchangaData?.astroTip && (
+                    <Card className="bg-gradient-to-br from-accent/10 to-primary/5">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Sun className="w-5 h-5 text-primary" />
+                          Astrological Guidance
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm leading-relaxed">{panchangaData.astroTip}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </DialogContent>
       </Dialog>
