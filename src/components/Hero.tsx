@@ -1,70 +1,112 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { HeroMotion } from "./HeroMotion";
-import { RotatingWords } from "./RotatingWords";
+
+
+const rotatingPhrases = ["Think like", "Act like a", "Be a"];
 
 export const Hero = () => {
   const navigate = useNavigate();
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <header role="banner" className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative py-20 lg:py-32 overflow-hidden">
       {/* Premium background with subtle patterns */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-slate-900/50 to-background" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(253,186,116,0.15),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,146,60,0.1),transparent_50%)]" />
       
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full max-w-7xl">
-        {/* Mobile-first layout */}
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[80vh]">
-          
-          {/* Motion Graphic - Top on mobile, right on desktop */}
-          <div className="order-1 lg:order-2 w-full max-w-sm sm:max-w-md lg:max-w-none">
-            <HeroMotion 
-              className="w-full" 
-              aria-label="Rishi meditating with neural constellation—eternal wisdom meets modern AI"
-            />
-          </div>
-          
-          {/* Content - Bottom on mobile, left on desktop */}
-          <div className="order-2 lg:order-1 space-y-6 lg:space-y-8 text-center lg:text-left w-full">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+          {/* Content */}
+          <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
+            {/* Rotating Headline */}
+            <div className="space-y-4">
+              <div className="h-16 flex items-center justify-center lg:justify-start">
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={currentPhraseIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent"
+                  >
+                    {rotatingPhrases[currentPhraseIndex]}
+                  </motion.h1>
+                </AnimatePresence>
+              </div>
+              
+              <motion.h2 
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                NeoRishi
+              </motion.h2>
+            </div>
             
             {/* Tagline */}
             <motion.p 
-              className="text-sm sm:text-base text-slate-300 font-medium tracking-wide"
+              className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
               Redefining Lifestyle with Sanatan Intelligence.
             </motion.p>
             
-            {/* Rotating Headline */}
-            <div className="space-y-2">
-              <RotatingWords />
-            </div>
-            
             {/* CTA Section */}
             <motion.div 
-              className="pt-6"
+              className="pt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             >
               <Button 
                 onClick={() => navigate('/onboarding')}
-                size="lg"
-                className="w-full sm:w-auto rounded-full px-6 py-3 text-sm font-medium bg-kesari text-slate-900 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-kesari/30 transition-all"
-                aria-label="Start your spiritual wellness journey with NeoRishi"
+                size="lg" 
+                className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground text-lg px-8 py-6 rounded-2xl shadow-elegant group"
               >
-                start your journey
-                <ArrowRight className="w-4 h-4 ml-2" />
+                Start Your Journey
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
           </div>
+          
+          {/* Hero Image */}
+          <motion.div 
+            className="relative order-1 lg:order-2"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          >
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto lg:max-w-none">
+              <img 
+                src="/lovable-uploads/3c67ba90-ae3a-4e7a-b07f-fa0a2b7edc68.png" 
+                alt="Meditation and spiritual wellness through AI-powered Ayurveda"
+                className="w-full h-[400px] lg:h-[500px] object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary-glow/10" />
+            </div>
+            
+            {/* Decorative elements */}
+            <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-primary to-primary-glow rounded-full opacity-20 blur-xl" />
+            <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-primary-glow to-primary rounded-full opacity-15 blur-2xl" />
+          </motion.div>
         </div>
       </div>
-    </header>
+    </section>
   );
 };
