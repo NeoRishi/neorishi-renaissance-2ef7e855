@@ -1,127 +1,126 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-
-
-const rotatingPhrases = ["Think like,", "Act like,", "Be a"];
+import { RotatingWords } from './RotatingWords';
+import { HeroMotion } from './HeroMotion';
+import { CTAStart } from './CTAStart';
 
 export const Hero = () => {
   const navigate = useNavigate();
-  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
-    }, 1800);
-
-    return () => clearInterval(interval);
-  }, []);
+  const handleStartJourney = async () => {
+    setIsLoading(true);
+    // Small delay for UX
+    setTimeout(() => {
+      navigate('/onboarding');
+      setIsLoading(false);
+    }, 300);
+  };
 
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
-      {/* Premium background with subtle patterns */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-slate-900/50 to-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(253,186,116,0.15),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(251,146,60,0.1),transparent_50%)]" />
+    <header role="banner" className="relative min-h-screen py-16 sm:py-20 lg:py-32 overflow-hidden">
+      {/* Premium deep navy background with luxury textures */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800/90 to-slate-900" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(244,211,138,0.08),transparent_40%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(246,184,94,0.06),transparent_50%)]" />
       
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
-          {/* Content */}
-          <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
-            {/* Rotating Headline */}
-            <div className="space-y-4">
-              <div className="h-20 flex items-center justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-4">
-                  <div className="w-80 overflow-hidden">
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={currentPhraseIndex}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -30 }}
-                        transition={{ 
-                          duration: 0.6, 
-                          ease: [0.4, 0, 0.2, 1],
-                          type: "spring",
-                          stiffness: 100,
-                          damping: 15
-                        }}
-                        className="text-4xl md:text-5xl lg:text-6xl font-light bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent block"
-                        style={{ fontFamily: "'Playfair Display', serif" }}
-                      >
-                        {rotatingPhrases[currentPhraseIndex]}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-              
-              <motion.h2 
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight"
-                style={{ 
-                  fontFamily: "'Playfair Display', serif",
-                  textShadow: "0 0 24px hsl(var(--primary-glow) / 0.15)"
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                NeoRishi
-              </motion.h2>
-            </div>
+      {/* Subtle film grain + vignette */}
+      <div 
+        className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20" />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 h-full">
+        {/* Mobile-first stack: Motion graphic → Text content → CTA */}
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 lg:gap-16 items-center justify-center min-h-[calc(100vh-8rem)] max-w-7xl mx-auto">
+          
+          {/* Motion Graphic - Top on mobile, Right on desktop */}
+          <div className="order-1 lg:order-2 w-full max-w-sm sm:max-w-md lg:max-w-none">
+            <HeroMotion />
+          </div>
+
+          {/* Text Content - Bottom on mobile, Left on desktop */}
+          <div className="order-2 lg:order-1 space-y-6 sm:space-y-8 text-center lg:text-left w-full">
             
             {/* Tagline */}
             <motion.p 
-              className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0"
+              className="text-sm sm:text-base text-slate-300/80 tracking-wide font-light"
+              style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
             >
               Redefining Lifestyle with Sanatan Intelligence.
             </motion.p>
             
-            {/* CTA Section */}
-            <motion.div 
-              className="pt-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <Button 
-                onClick={() => navigate('/onboarding')}
-                size="lg" 
-                className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground text-lg px-8 py-6 rounded-2xl shadow-elegant group"
+            {/* Kinetic Headline */}
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-2 sm:gap-4">
+                <RotatingWords />
+                <motion.span 
+                  className="text-2xl sm:text-3xl lg:text-4xl text-slate-400 font-light"
+                  style={{ fontFamily: "'Fraunces', 'Playfair Display', Georgia, serif" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                  →
+                </motion.span>
+              </div>
+              
+              <motion.h1 
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-r from-[#F4D38A] via-[#FFC875] to-[#F6B85E] bg-clip-text text-transparent leading-tight"
+                style={{ 
+                  fontFamily: "'Fraunces', 'Playfair Display', Georgia, serif",
+                  fontWeight: 750,
+                  fontVariationSettings: '"opsz" auto',
+                  textShadow: "0 0 24px rgba(244,211,138,0.4), 0 0 8px rgba(244,211,138,0.3)"
+                }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  textShadow: [
+                    "0 0 24px rgba(244,211,138,0.25), 0 0 8px rgba(244,211,138,0.2)",
+                    "0 0 32px rgba(244,211,138,0.4), 0 0 12px rgba(244,211,138,0.3)",
+                    "0 0 24px rgba(244,211,138,0.25), 0 0 8px rgba(244,211,138,0.2)"
+                  ]
+                }}
+                transition={{ 
+                  opacity: { duration: 0.8, delay: 0.4, ease: [0.23, 1, 0.32, 1] },
+                  y: { duration: 0.8, delay: 0.4, ease: [0.23, 1, 0.32, 1] },
+                  textShadow: { 
+                    duration: 6, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    delay: 1
+                  }
+                }}
               >
-                Start Your Journey
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </motion.div>
-          </div>
-          
-          {/* Hero Image */}
-          <motion.div 
-            className="relative order-1 lg:order-2"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto lg:max-w-none">
-              <img 
-                src="/lovable-uploads/3c67ba90-ae3a-4e7a-b07f-fa0a2b7edc68.png" 
-                alt="Meditation and spiritual wellness through AI-powered Ayurveda"
-                className="w-full h-[400px] lg:h-[500px] object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary-glow/10" />
+                NeoRishi
+              </motion.h1>
             </div>
             
-            {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-primary to-primary-glow rounded-full opacity-20 blur-xl" />
-            <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-primary-glow to-primary rounded-full opacity-15 blur-2xl" />
-          </motion.div>
+            {/* CTA Button */}
+            <motion.div 
+              className="pt-6 sm:pt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <CTAStart 
+                onClick={handleStartJourney}
+                loading={isLoading}
+              />
+            </motion.div>
+          </div>
         </div>
       </div>
-    </section>
+    </header>
   );
 };
