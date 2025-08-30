@@ -187,7 +187,7 @@ const Index = () => {
                   <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold text-foreground mb-6">Transform Your Wellness Journey</h2>
                     <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-                      Feeling tired, stuck, or out of sync with your body and mind? NeoRishi combines 5000-year-old Ayurvedic wisdom with modern AI to create your personalized path to wellness.
+                      Feeling tired, stuck, or out of sync with your body and mind? NeoRishi combines timeless Sanatan wisdom with modern science to create your personalized path to holistic wellness.
                     </p>
                   </div>
 

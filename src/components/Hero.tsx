@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 
-const rotatingPhrases = ["Think like", "Act like a", "Be a"];
+const rotatingPhrases = ["Think like,", "Act like,", "Be a"];
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export const Hero = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPhraseIndex((prev) => (prev + 1) % rotatingPhrases.length);
-    }, 3000);
+    }, 1800);
 
     return () => clearInterval(interval);
   }, []);
@@ -32,23 +32,38 @@ export const Hero = () => {
           <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
             {/* Rotating Headline */}
             <div className="space-y-4">
-              <div className="h-16 flex items-center justify-center lg:justify-start">
-                <AnimatePresence mode="wait">
-                  <motion.h1
-                    key={currentPhraseIndex}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent"
-                  >
-                    {rotatingPhrases[currentPhraseIndex]}
-                  </motion.h1>
-                </AnimatePresence>
+              <div className="h-20 flex items-center justify-center lg:justify-start">
+                <div className="inline-flex items-center gap-4">
+                  <div className="w-80 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={currentPhraseIndex}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        transition={{ 
+                          duration: 0.6, 
+                          ease: [0.4, 0, 0.2, 1],
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 15
+                        }}
+                        className="text-4xl md:text-5xl lg:text-6xl font-light bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent block"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                      >
+                        {rotatingPhrases[currentPhraseIndex]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
               
               <motion.h2 
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground"
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight"
+                style={{ 
+                  fontFamily: "'Playfair Display', serif",
+                  textShadow: "0 0 24px hsl(var(--primary-glow) / 0.15)"
+                }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
