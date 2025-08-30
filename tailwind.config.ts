@@ -20,9 +20,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'sans': ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-				'display': ['Fraunces', 'Playfair Display', 'Georgia', 'serif'],
-				'hero': ['Fraunces', 'Playfair Display', 'Georgia', 'serif'],
+				'sans': ['Geist', 'Inter', 'system-ui', 'sans-serif'],
+				'display': ['Geist', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
