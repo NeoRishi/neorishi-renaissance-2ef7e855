@@ -32,6 +32,7 @@ const LunarDashboard = () => {
   const [streaks, setStreaks] = useState<Streak | null>(null);
   const [currentDate, setCurrentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoadingPanchanga, setIsLoadingPanchanga] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,8 +43,9 @@ const LunarDashboard = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
+        setIsLoadingPanchanga(true);
         // Load Panchanga data for current date
-        const panchanga = getPanchanga(currentDate);
+        const panchanga = await getPanchanga(currentDate);
         setPanchangaData(panchanga);
         
         // Load streaks data
@@ -51,11 +53,18 @@ const LunarDashboard = () => {
         setStreaks(userStreaks);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        toast({
+          title: "Error loading data",
+          description: "Using cached data. Please try refreshing.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingPanchanga(false);
       }
     };
 
     loadDashboardData();
-  }, [currentDate]);
+  }, [currentDate, toast]);
 
   const handleSignOut = async () => {
     try {
@@ -70,12 +79,14 @@ const LunarDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || isLoadingPanchanga) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your spiritual dashboard...</p>
+          <p className="text-muted-foreground">
+            {loading ? 'Loading your spiritual dashboard...' : 'Fetching authentic Panchanga data...'}
+          </p>
         </div>
       </div>
     );

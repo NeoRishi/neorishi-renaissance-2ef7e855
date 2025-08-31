@@ -1,8 +1,29 @@
 import { PanchangaDay, Task, Streak, JournalEntry } from '@/types/panchanga';
 import { format, addDays, parseISO } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock Panchanga data generator
-export const getPanchanga = (dateISO: string): PanchangaDay => {
+// Real Panchanga data from VedicAstroAPI
+export const getPanchanga = async (dateISO: string): Promise<PanchangaDay> => {
+  try {
+    // Call the edge function to fetch real panchanga data
+    const { data, error } = await supabase.functions.invoke('fetch-panchanga', {
+      body: { date: dateISO }
+    });
+
+    if (error) {
+      console.error('Error fetching panchanga data:', error);
+      return getMockPanchanga(dateISO);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error calling panchanga service:', error);
+    return getMockPanchanga(dateISO);
+  }
+};
+
+// Fallback mock Panchanga data generator
+const getMockPanchanga = (dateISO: string): PanchangaDay => {
   const date = parseISO(dateISO);
   const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
   

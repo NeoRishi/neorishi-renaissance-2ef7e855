@@ -1,1 +1,4 @@
 project_id = "fvywjcafbbowduxpushr"
+
+[functions.fetch-panchanga]
+verify_jwt = false
