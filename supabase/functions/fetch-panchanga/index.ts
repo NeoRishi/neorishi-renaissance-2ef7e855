@@ -59,29 +59,30 @@ serve(async (req) => {
       });
     }
 
-    // Get API key
-    const apiKey = Deno.env.get('VEDIC_ASTRO_API_KEY');
-    if (!apiKey) {
-      throw new Error('VEDIC_ASTRO_API_KEY not configured');
+    // Parse API credentials (format: user_id:api_key)
+    const vedicAstroCredentials = Deno.env.get('VEDIC_ASTRO_API_KEY');
+    if (!vedicAstroCredentials || !vedicAstroCredentials.includes(':')) {
+      throw new Error('VEDIC_ASTRO_API_KEY must be in format user_id:api_key');
+    }
+    
+    const [user_id, api_key] = vedicAstroCredentials.split(':', 2);
+    if (!user_id || !api_key) {
+      throw new Error('Invalid API credentials format');
     }
 
-    // Parse date
-    const [year, month, day] = date.split('-');
+    console.log('Using VedicAstroAPI with user_id:', user_id);
     
-    // Call VedicAstroAPI for basic panchang
-    const apiUrl = 'https://json.astrologyapi.com/v1/basic_panchang';
+    // Call VedicAstroAPI v3 panchang endpoint
+    const apiUrl = 'https://api.vedicastroapi.com/v3-json/panchang/panchang';
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${apiKey.split(':')[0]}:${apiKey.split(':')[1]}`)}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        day: parseInt(day),
-        month: parseInt(month),
-        year: parseInt(year),
-        hour: 6,
-        min: 0,
+        user_id: user_id,
+        api_key: api_key,
+        date: date,
         lat: lat,
         lon: lon,
         tzone: tzone
@@ -92,43 +93,76 @@ serve(async (req) => {
       throw new Error(`VedicAstroAPI error: ${response.status}`);
     }
 
-    const apiData: VedicAstroResponse = await response.json();
+    const apiData = await response.json();
+    console.log('VedicAstroAPI response status:', response.status);
     console.log('VedicAstroAPI response:', JSON.stringify(apiData, null, 2));
 
-    if (!apiData.status) {
-      throw new Error('Invalid response from VedicAstroAPI');
+    if (!response.ok || !apiData.status) {
+      const errorMsg = apiData.msg || `HTTP ${response.status}`;
+      console.error('API Error:', errorMsg);
+      throw new Error(`VedicAstroAPI Error: ${errorMsg}`);
     }
+
+    // Enhanced data transformation with proper API response mapping
+    const response_data = apiData.response || apiData;
+    
+    // Calculate moon phase from tithi for better accuracy
+    const getMoonPhaseFromTithi = (tithiName: string) => {
+      const tithiIndex = parseInt(tithiName?.split(' ')[0]) || 1;
+      if (tithiIndex <= 7) return { name: 'Waxing Crescent', illumination: Math.round((tithiIndex / 15) * 50), emoji: '🌒' };
+      if (tithiIndex <= 15) return { name: 'Waxing Gibbous', illumination: Math.round(50 + ((tithiIndex - 7) / 8) * 50), emoji: '🌔' };
+      if (tithiIndex <= 22) return { name: 'Waning Gibbous', illumination: Math.round(100 - ((tithiIndex - 15) / 7) * 50), emoji: '🌖' };
+      return { name: 'Waning Crescent', illumination: Math.round(50 - ((tithiIndex - 22) / 8) * 50), emoji: '🌘' };
+    };
+
+    // Get current season based on masa
+    const getCurrentRitu = (masa: string) => {
+      const rituMap: Record<string, string> = {
+        'Chaitra': 'Vasanta', 'Vaishakha': 'Vasanta',
+        'Jyeshtha': 'Grishma', 'Ashadha': 'Grishma',
+        'Shravana': 'Varsha', 'Bhadrapada': 'Varsha',
+        'Ashvin': 'Sharad', 'Kartik': 'Sharad',
+        'Agrahayan': 'Hemanta', 'Pausha': 'Hemanta',
+        'Magha': 'Shishira', 'Phalguna': 'Shishira'
+      };
+      return rituMap[masa] || 'Varsha';
+    };
 
     // Transform API response to match PanchangaDay interface
     const panchangaData = {
       dateISO: date,
       timezone: 'Asia/Kolkata',
-      ritu: apiData.response.ritu?.ritu_name || 'Varṣā',
-      masa: apiData.response.hindu_maah?.amanta_name || 'Bhādrapada',
-      paksha: apiData.response.paksha === 'Shukla' ? 'Śukla' : 'Kṛṣṇa',
+      ritu: getCurrentRitu(response_data.masa || response_data.hindu_maah?.amanta_name || 'Bhadrapada'),
+      masa: response_data.masa || response_data.hindu_maah?.amanta_name || 'Bhadrapada',
+      paksha: (response_data.paksha === 'Shukla' || response_data.paksha === 'Śukla') ? 'Śukla' : 'Kṛṣṇa',
       tithi: {
-        name: apiData.response.tithi?.details?.tithi_name || 'Pratipat',
-        index: apiData.response.tithi?.details?.tithi_number || 1,
+        name: response_data.tithi?.details?.tithi_name || response_data.tithi || 'Pratipat',
+        index: response_data.tithi?.details?.tithi_number || parseInt(response_data.tithi?.split(' ')[0]) || 1,
         start: `${date}T06:00:00+05:30`,
-        end: `${date}T${String(apiData.response.tithi?.end_time?.hour || 18).padStart(2, '0')}:${String(apiData.response.tithi?.end_time?.minute || 0).padStart(2, '0')}:00+05:30`,
+        end: response_data.tithi?.end_time ? 
+          `${date}T${String(response_data.tithi.end_time.hour || 18).padStart(2, '0')}:${String(response_data.tithi.end_time.minute || 0).padStart(2, '0')}:00+05:30` :
+          `${date}T18:00:00+05:30`,
       },
       nakshatra: {
-        name: apiData.response.nakshatra?.details?.nak_name || 'Aśvinī',
-        end: `${date}T${String(apiData.response.nakshatra?.end_time?.hour || 18).padStart(2, '0')}:${String(apiData.response.nakshatra?.end_time?.minute || 0).padStart(2, '0')}:00+05:30`,
+        name: response_data.nakshatra?.details?.nak_name || response_data.nakshatra || 'Ashvini',
+        end: response_data.nakshatra?.end_time ? 
+          `${date}T${String(response_data.nakshatra.end_time.hour || 18).padStart(2, '0')}:${String(response_data.nakshatra.end_time.minute || 0).padStart(2, '0')}:00+05:30` :
+          `${date}T18:00:00+05:30`,
       },
-      yoga: apiData.response.yog?.details?.yog_name || 'Viṣkambha',
-      karana: apiData.response.karan?.details?.karan_name || 'Bava',
-      sunrise: `${date}T${apiData.response.sunrise || '06:00:00'}+05:30`,
-      sunset: `${date}T${apiData.response.sunset || '18:00:00'}+05:30`,
-      moonrise: `${date}T${apiData.response.moonrise || '20:00:00'}+05:30`,
-      moonset: `${date}T${apiData.response.moonset || '08:00:00'}+05:30`,
-      festivals: [], // TODO: Add festival data from API if available
-      astroTip: "Align your actions with today's cosmic rhythm for harmonious living.",
-      moonPhase: {
-        name: apiData.response.moon_phase || 'Waxing Crescent',
-        illumination: 50, // TODO: Calculate from moon phase
-        emoji: '🌒'
-      },
+      yoga: response_data.yog?.details?.yog_name || response_data.yoga || 'Vishkambha',
+      karana: response_data.karan?.details?.karan_name || response_data.karana || 'Bava',
+      sunrise: `${date}T${response_data.sunrise || '06:00:00'}+05:30`,
+      sunset: `${date}T${response_data.sunset || '18:00:00'}+05:30`,
+      moonrise: `${date}T${response_data.moonrise || '20:00:00'}+05:30`,
+      moonset: `${date}T${response_data.moonset || '08:00:00'}+05:30`,
+      festivals: response_data.festivals?.map((f: any) => ({
+        name: f.name || f,
+        type: f.type || 'Religious',
+        importance: f.importance || 'Medium',
+        isToday: true
+      })) || [],
+      astroTip: response_data.astro_tip || "Align your actions with today's cosmic rhythm for harmonious living.",
+      moonPhase: getMoonPhaseFromTithi(response_data.tithi?.details?.tithi_name || response_data.tithi || 'Pratipat'),
       doshaGunaBlocks: [
         {
           from: '04:00',
@@ -198,7 +232,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in fetch-panchanga function:', error);
     
-    // Return fallback mock data on error
+    // Enhanced error handling with specific error types
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const isAuthError = errorMessage.includes('Invalid') || errorMessage.includes('user_id') || errorMessage.includes('api_key') || errorMessage.includes('credentials');
+    const isApiError = errorMessage.includes('VedicAstroAPI') || errorMessage.includes('HTTP');
+    
+    console.error('Error classification - Auth:', isAuthError, 'API:', isApiError, 'Message:', errorMessage);
+    
+    // Return enhanced fallback data with error context
     const fallbackData = {
       dateISO: new Date().toISOString().split('T')[0],
       timezone: 'Asia/Kolkata',
@@ -221,8 +262,18 @@ serve(async (req) => {
       sunset: `${new Date().toISOString().split('T')[0]}T18:00:00+05:30`,
       moonrise: `${new Date().toISOString().split('T')[0]}T20:00:00+05:30`,
       moonset: `${new Date().toISOString().split('T')[0]}T08:00:00+05:30`,
-      festivals: [],
-      astroTip: "Unable to fetch live data. Please try again later.",
+      festivals: [{
+        name: isAuthError ? 'API Authentication Issue' : isApiError ? 'API Service Unavailable' : 'System Error',
+        type: 'System',
+        importance: 'High' as const,
+        note: isAuthError ? 'Check API credentials format (user_id:api_key)' : isApiError ? 'VedicAstroAPI service issue' : 'Unknown error occurred',
+        isToday: true
+      }],
+      astroTip: isAuthError ? 
+        "API credentials need verification. Using mock data for now." :
+        isApiError ? 
+        "VedicAstroAPI temporarily unavailable. Using calculated data." :
+        "System error occurred. Please try refreshing.",
       moonPhase: {
         name: 'Waxing Crescent',
         illumination: 50,
