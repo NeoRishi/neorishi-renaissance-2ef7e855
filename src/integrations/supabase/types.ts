@@ -388,10 +388,109 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_onboarding_responses: {
+        Row: {
+          birth_place: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          is_email_verified: boolean | null
+          is_phone_verified: boolean | null
+          phone: string | null
+          responses: Json | null
+          time_of_birth: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          birth_place?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_email_verified?: boolean | null
+          is_phone_verified?: boolean | null
+          phone?: string | null
+          responses?: Json | null
+          time_of_birth?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          birth_place?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_email_verified?: boolean | null
+          is_phone_verified?: boolean | null
+          phone?: string | null
+          responses?: Json | null
+          time_of_birth?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      safe_profiles: {
+        Row: {
+          birth_place: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          is_email_verified: boolean | null
+          is_phone_verified: boolean | null
+          phone: string | null
+          time_of_birth: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          birth_place?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_email_verified?: boolean | null
+          is_phone_verified?: boolean | null
+          phone?: string | null
+          time_of_birth?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          birth_place?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_email_verified?: boolean | null
+          is_phone_verified?: boolean | null
+          phone?: string | null
+          time_of_birth?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      is_authenticated_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      validate_user_data_access: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
